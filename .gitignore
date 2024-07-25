@@ -3,3 +3,4 @@ env/
 backend/env/
 backend/__pycache__/
 backend/src/.env
+backend/src/__pycache__/
