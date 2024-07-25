@@ -2,10 +2,11 @@ from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 import uvicorn
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
-from collections import defaultdict
+from model import UserModel, StockModel
+
 import requests
-from typing import Optional
 import google.generativeai as genai
 import json 
 import re
@@ -14,25 +15,35 @@ from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from hashlib import sha256 
+from datetime import datetime
 
 load_dotenv()
 
 class Query(BaseModel):
     query: str
 
-session = {}
-
 INTENTS = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 COMPANY_NAME = {"apple": "aapl", "infosys": "infy", "ibm": "ibm", "tata": "tcs"}
-uri = "mongodb+srv://soc:root@stockscluster.ffmfprp.mongodb.net/"
-# Create a new client and connect to the server
-client = None
-collection = None
 
+uri = "mongodb+srv://soc:root@stockscluster.ffmfprp.mongodb.net/"
+client = None
+useruserCollection = None
+stockCollection = None
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost:3000",
+    "http://localhost:5000",
+]
+echios_symbols = ["ibm", "msft", "tsla", "race"]
+echiosapiKey= 'GRP18XR0CK3T7'
+echios_url = "https://echios.tech/price/" 
+previous_echios_mock = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -46,8 +57,10 @@ async def lifespan(app: FastAPI):
     API_KEY = os.environ.get("ALPHA_VANTAGE_API_KEY")
     global client
     client = MongoClient(uri, server_api=ServerApi('1'))
-    global collection 
-    collection = client.stocks.users
+    global userCollection 
+    userCollection = client.stocks.users
+    global stockCollection
+    stockCollection = client.stocks.stocks
     try:
         client.admin.command('ping')
         print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -59,6 +72,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 def clean_context(text: str):
     clean_txt = re.sub(r"\n", " ", text)
     clean_txt = re.sub(r"\s+", " ", clean_txt)
@@ -69,7 +90,7 @@ def clean_context(text: str):
 async def home():
     with open("src/intent.json") as f:
         data = json.load(f)
-    data = collection.find()
+    data = userCollection.find()
     for user in data:
         print(user["name"], str(user["_id"]))
     # return data
@@ -78,9 +99,13 @@ async def home():
 async def regsiter(request: Request):
     body = await request.json()
     password = body["password"]
+    email = body["email"]
+    user = userCollection.find({"email": email})
+    if user: 
+        return False
     hash = sha256(password.encode()).hexdigest()
     body["password"] = hash
-    data = collection.insert_one(body)
+    data = userCollection.insert_one(body)
     return str(data.inserted_id)
 
 @app.post("/login")
@@ -88,7 +113,7 @@ async def login(request: Request):
     body = await request.json()
     email = body["email"]
     password = body["password"]
-    data = collection.find_one({"email": email})
+    data = userCollection.find_one({"email": email})
     hashed_pass = sha256(password.encode()).hexdigest()
     if hashed_pass == data["password"]:
         return True
@@ -123,7 +148,45 @@ async def query(request: Request):
     new_query = data["query"] + ". Make sure the generated text is in plain string text and should be without any '*' or neither any other such characters for designing"
     response = model.generate_content(new_query)
     return response.text
-            
+
+@app.post("/transaction")
+async def transact(request: Request):
+    body = await request.json()
+    email = body["email"]
+    user = userCollection.find_one({"email": email})
+    if not user:
+        return False
+    else:
+        userId = str(user["_id"])
+        print(userId)
+        time = datetime.now()
+        stock_data = {"name": body["stock_name"], "current_price": body["price"], "quantity": body["quantity"], "action": body["action"], "timestamp": time.strftime("%d/%m/%Y %H:%M:%S"), "user": user}
+        data = stockCollection.insert_one(stock_data)
+        return str(data.inserted_id)
+    
+@app.get("/getOrderBook")
+async def getOrderBook(email: str):
+    user = userCollection.find_one({"email": email})
+    if not user:
+        return {"success": False}
+    stocks = stockCollection.find({"user": user})
+    data = [{"id": str(stock["_id"]), "name": stock["name"], "current_price": stock["current_price"], "quantity": stock["quantity"], "action": stock["action"], "time": stock["timestamp"]} for stock in stocks]
+    return data
+
+@app.get("/echios")
+async def getData(symbol: str):
+    api_url = echios_url+symbol+"?apikey="+echiosapiKey
+    global previous_echios_mock 
+    try:
+        data = requests.get(api_url)
+        res = data.json()
+        if not res:
+            return previous_echios_mock
+        previous_echios_mock = res 
+        return res
+    except:
+        return previous_echios_mock
+   
 
 async def fetchData(symbol: str, interval = ""):
     if not interval:
@@ -131,6 +194,7 @@ async def fetchData(symbol: str, interval = ""):
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval={interval}&apikey={API_KEY}'
     data = requests.get(url)
     return data.json()
+
 
             
 
