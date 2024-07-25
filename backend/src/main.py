@@ -11,6 +11,9 @@ import json
 import re
 import os
 from dotenv import load_dotenv
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+from hashlib import sha256 
 
 load_dotenv()
 
@@ -25,6 +28,10 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 COMPANY_NAME = {"apple": "aapl", "infosys": "infy", "ibm": "ibm", "tata": "tcs"}
+uri = "mongodb+srv://soc:root@stockscluster.ffmfprp.mongodb.net/"
+# Create a new client and connect to the server
+client = None
+collection = None
 
 
 @asynccontextmanager
@@ -37,6 +44,15 @@ async def lifespan(app: FastAPI):
     INTENTS = data 
     global API_KEY
     API_KEY = os.environ.get("ALPHA_VANTAGE_API_KEY")
+    global client
+    client = MongoClient(uri, server_api=ServerApi('1'))
+    global collection 
+    collection = client.stocks.users
+    try:
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    except Exception as e:
+        print(e)
     yield
     # Clean up the ML models and release the resources
     # post process after the server ends
@@ -49,11 +65,35 @@ def clean_context(text: str):
     clean_txt = clean_txt.strip()
     return clean_txt
 
-@app.get("/")
+@app.get("/test")
 async def home():
     with open("src/intent.json") as f:
         data = json.load(f)
-    return data 
+    data = collection.find()
+    for user in data:
+        print(user["name"], str(user["_id"]))
+    # return data
+
+@app.post("/register")
+async def regsiter(request: Request):
+    body = await request.json()
+    password = body["password"]
+    hash = sha256(password.encode()).hexdigest()
+    body["password"] = hash
+    data = collection.insert_one(body)
+    return str(data.inserted_id)
+
+@app.post("/login")
+async def login(request: Request):
+    body = await request.json()
+    email = body["email"]
+    password = body["password"]
+    data = collection.find_one({"email": email})
+    hashed_pass = sha256(password.encode()).hexdigest()
+    if hashed_pass == data["password"]:
+        return True
+    return False
+
 
 @app.post("/query")
 async def query(request: Request):
