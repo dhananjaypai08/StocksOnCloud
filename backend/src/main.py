@@ -34,7 +34,7 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
-COMPANY_NAME = {"apple": "aapl", "infosys": "infy", "ibm": "ibm", "tata": "tcs"}
+COMPANY_NAME = {"apple": "aapl", "infosys": "infy", "ibm": "ibm", "tata": "tcs", "tcs": "tcs"}
 
 uri = "mongodb+srv://soc:root@stockscluster.ffmfprp.mongodb.net/"
 client = None
@@ -144,6 +144,7 @@ async def login(request: Request):
         return True
     return False
 
+
 async def sendmail(email: str, otp: str):
     if not USER_OTP.get(email, ""): return "User not found"
     html = f"""<p>Hi \n
@@ -178,6 +179,7 @@ async def verify(request: Request):
 async def query(request: Request):
     data = await request.json()
     context = data["query"].lower()
+    email = data["email"]
     clean_text = clean_context(context)
     tokens = clean_text.split()
     for token in tokens:
@@ -189,19 +191,33 @@ async def query(request: Request):
                     for stock in list_stocks:
                         if stock in tokens:
                             company_name = stock
-                            return await fetchData(COMPANY_NAME[company_name])
+                            if COMPANY_NAME.get(company_name):
+                                return await fetchData(COMPANY_NAME[company_name])
                 if not company_name and "of" in tokens:
                     placeholder = tokens.index("of")
                     company_name = tokens[placeholder+1]
-                    return await fetchData(COMPANY_NAME[company_name])
+                    if COMPANY_NAME.get(company_name):
+                        return await fetchData(COMPANY_NAME[company_name])
                 if not company_name or "of" not in tokens:
                     new_query = data["query"] + ". Make sure the generated text is in plain string text is not formatted for prettification, I need the repsonse text in plain string. I want the answer in dictionary format so that I can parse the generated string as a dictionary in python. Example output: {'stock_name': ['stock_value', 'high', 'low', 'other data']}"
                     response = model.generate_content(new_query)
                     return response.text
-                return await fetchData(COMPANY_NAME[company_name])
-    new_query = data["query"] + ". Make sure the generated text is in plain string text and should be without any '*' or neither any other such characters for designing"
+                if company_name and COMPANY_NAME.get(company_name):
+                    return await fetchData(COMPANY_NAME[company_name])
+                
+            # if INTENTS[token] == "buy":
+            #     if "of" not in tokens:
+            #         return "Stock name not detected"
+            #     else:
+            #         placeholder = tokens.index("of")
+            #         company_name = tokens[placeholder+1]
+            #         data = requests.post("http://localhost:5000/transaction", {"email": email, })
+
+    new_query = data["query"] + ". Make sure the generated text is in dictionary format such that I can convert the generated data to dictionary easily in python using json.loads function to convert the text to dict and without new lines and without endlines"
     response = model.generate_content(new_query)
-    return response.text
+    print(response.text)
+    data = json.loads(str(response.text))
+    return data
 
 @app.post("/transaction")
 async def transact(request: Request):
