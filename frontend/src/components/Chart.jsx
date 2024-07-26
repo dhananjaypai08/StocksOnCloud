@@ -1,10 +1,14 @@
-import { createChart, ColorType } from "lightweight-charts";
+import {
+  ColorType,
+  createChart,
+  CrosshairMode,
+} from "lightweight-charts";
 import React, { useEffect, useRef, useState } from "react";
 
 export const Chart = () => {
 const chartContainerRef = useRef();
   const apiKey = '22df77ad4b704e51be4568b617c66068';
-  const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
+  // const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([{ time: 1545436800, value: 32.51 },
     { time: 1545523200, value: 31.11 },
     { time: 1545609600, value: 27.02 },
@@ -37,11 +41,11 @@ const fetchData = async () => {
   
   }   
 
-useEffect(() => {
-  // fetchData(); // Initial fetch
-  const intervalId = setInterval(fetchData,5000); // Fetch every 5 minutes
-  return () => clearInterval(intervalId);
-}, []);
+// useEffect(() => {
+  
+//   const intervalId = setInterval(fetchData,5000); 
+//   return () => clearInterval(intervalId);
+// }, []);
 
 useEffect(() => {
 
@@ -53,10 +57,23 @@ useEffect(() => {
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: "white" },
+        background: "#0e0f14",
+        color: "white",
+        textColor: "white",
       },
-      width: 400,
-      height: 200,
+      autoSize: true,
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      },
+      overlayPriceScales: {
+        ticksVisible: true,
+        borderVisible: true,
+      },
+      rightPriceScale: {
+        visible: true,
+        ticksVisible: true,
+        entireTextOnly: true,
+      }
     });
 
     const newSeries = chart.addAreaSeries({ 
@@ -74,5 +91,5 @@ useEffect(() => {
     };
   }, [data]);
 
-  return <div ref={chartContainerRef}></div>;
+  return <div ref={chartContainerRef} style={{ height: "520px", width: "100%", marginTop: 4 }}></div>;
 }

@@ -11,7 +11,7 @@ export const Signup = () => {
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
     return (
-        <div className="bg-slate-300 h-screen flex justify-center">
+        <div className="bg-black h-screen flex justify-center">
             <div className="flex flex-col justify-center">
                 <div className="rounded-lg bg-white w-80 text-center p-2 h-max px-4">
                     <div className="font-bold text-4xl pt-6">Register Now</div>
@@ -41,15 +41,20 @@ export const Signup = () => {
           <Button
               onClick={async () => {
                 const response = await axios.post(
-                  "http://localhost:3000/register",
+                  "http://localhost:5000/register",
                   {
                     name,
                     email,
                     password
                   }
                 );
+                console.log(response)
+                console.log(response.data)
+                if(response.data){
+                    navigate("/signin");
+                }
                 // localStorage.setItem("token", response.data.token);
-                navigate("/signin");
+                
               }}
               label={"Register"}
             />
