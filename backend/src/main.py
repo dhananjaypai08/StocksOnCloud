@@ -97,11 +97,13 @@ async def home():
 
 @app.post("/register")
 async def regsiter(request: Request):
+    print(request)
     body = await request.json()
     password = body["password"]
     email = body["email"]
-    user = userCollection.find({"email": email})
-    if user: 
+    user = userCollection.find_one({"email": email, "name": body["name"]})
+    print(user)
+    if user and user.get("email", "") == email: 
         return False
     hash = sha256(password.encode()).hexdigest()
     body["password"] = hash
