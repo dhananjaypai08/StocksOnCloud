@@ -13,6 +13,7 @@ function App() {
           <Route path="/signin" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/home" element={<Home />} />
+          {/* <Route path="/" element={<Landing />} /> */}
           {/* <Route path="/ai" element={<AI />} />
           <Route path="/crypto" element={<Crypto/>} />
           <Route path="/portfolio" element={<Portfolio />} /> */}
