@@ -5,6 +5,10 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from model import UserModel, StockModel
+from pydantic import BaseModel
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from typing import List
+from fastapi.responses import JSONResponse
 
 import requests
 import google.generativeai as genai
@@ -16,6 +20,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from hashlib import sha256 
 from datetime import datetime
+import random
 
 load_dotenv()
 
@@ -23,6 +28,7 @@ class Query(BaseModel):
     query: str
 
 INTENTS = {}
+USER_OTP = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -70,6 +76,18 @@ async def lifespan(app: FastAPI):
     # Clean up the ML models and release the resources
     # post process after the server ends
 
+conf = ConnectionConfig(
+    MAIL_USERNAME = "dhananjay2002pai@gmail.com",
+    MAIL_PASSWORD = "mxfzvwcytedlfewf",
+    MAIL_FROM = "dhananjay2002pai@gmail.com",
+    MAIL_PORT = 587,
+    MAIL_SERVER = "smtp.gmail.com",
+    MAIL_STARTTLS = True,
+    MAIL_SSL_TLS = False,
+    MAIL_FROM_NAME = "stocksOnCloud"
+)
+
+
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
@@ -97,12 +115,10 @@ async def home():
 
 @app.post("/register")
 async def regsiter(request: Request):
-    print(request)
     body = await request.json()
     password = body["password"]
     email = body["email"]
     user = userCollection.find_one({"email": email, "name": body["name"]})
-    print(user)
     if user and user.get("email", "") == email: 
         return False
     hash = sha256(password.encode()).hexdigest()
@@ -118,7 +134,43 @@ async def login(request: Request):
     data = userCollection.find_one({"email": email})
     hashed_pass = sha256(password.encode()).hexdigest()
     if hashed_pass == data["password"]:
+        otp = ""
+        for i in range(4):
+            otp += str(random.randint(0,9))
+        hashed_otp = sha256(otp.encode()).hexdigest()
+        USER_OTP[email] = hashed_otp
+        await sendmail(email, otp)
+        print("Mail sent")
         return True
+    return False
+
+async def sendmail(email: str, otp: str):
+    if not USER_OTP.get(email, ""): return "User not found"
+    html = f"""<p>Hi \n
+                Your OTP is : {otp} \n
+                \n\n
+                Thanks and Regards,
+                DJ
+            </p> """
+    message = MessageSchema(
+        subject="Verify OTP - stocksOnCloud",
+        recipients=[email],
+        body=html,
+        subtype=MessageType.html)
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    return True
+
+
+@app.post("/verifyOTP")
+async def verify(request: Request):
+    body = await request.json()
+    email = body["email"]
+    otp = body["otp"]
+    hashed_otp = sha256(otp.encode()).hexdigest()
+    if hashed_otp == USER_OTP.get(email, ""):
+        return True 
     return False
 
 
