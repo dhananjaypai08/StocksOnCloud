@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
-export const Watchlist = () => {
+export const WatchlistAlpha = () => {
   const [stocks, setStocks] = useState({});
   const [activeCategory, setActiveCategory] = useState("top_gainers");
   const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ export const Watchlist = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=805P5TX180NU9SHR"
+          "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=QCGYT3S83M52SL5L"
         );
         const limitedStocks = Object.fromEntries(
           Object.entries(response.data).map(([key, value]) => [
