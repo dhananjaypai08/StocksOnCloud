@@ -6,7 +6,7 @@ import { Trade } from "../components/Trade";
 import { Appbar } from "../components/Appbar";
 
 export const Home = () => {
-  const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
+  // const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([
     { time: 1545436800, value: 32.51 },
     { time: 1545523200, value: 31.11 },
@@ -36,10 +36,10 @@ export const Home = () => {
     }
   };
 
-  useEffect(() => {
-    const intervalId = setInterval(fetchData, 5000);
-    return () => clearInterval(intervalId);
-  }, []);
+  // useEffect(() => {
+  //   const intervalId = setInterval(fetchData, 5000);
+  //   return () => clearInterval(intervalId);
+  // }, []);
 
   useEffect(() => {
     if (data) {
