@@ -6,24 +6,26 @@ import { Button } from "../components/Button";
 import { InputBox } from "../components/InputBox";
 
 export const Signup = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
-    return (
-        <div className="bg-black h-screen flex justify-center">
-            <div className="flex flex-col justify-center">
-                <div className="rounded-lg bg-white w-80 text-center p-2 h-max px-4">
-                    <div className="font-bold text-4xl pt-6">Register Now</div>
-                    <div className="text-slate-500 text-md pt-1 px-4 pb-4">Enter your credentials to access your account</div>
-                    <InputBox
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  return (
+    <div className="bg-black h-screen flex justify-center">
+      <div className="flex flex-col justify-center">
+        <div className="rounded-lg bg-white w-80 text-center p-2 h-max px-4">
+          <div className="font-bold text-4xl pt-6">Register Now</div>
+          <div className="text-slate-500 text-md pt-1 px-4 pb-4">
+            Enter your credentials to access your account
+          </div>
+          <InputBox
             onChange={(e) => {
               setName(e.target.value);
             }}
             placeholder="John Deer"
             label={"Name"}
           />
-                    <InputBox
+          <InputBox
             onChange={(e) => {
               setEmail(e.target.value);
             }}
@@ -38,23 +40,22 @@ export const Signup = () => {
             label={"Password"}
           />
           <div className="pt-4">
-          <Button
+            <Button
               onClick={async () => {
                 const response = await axios.post(
-                  "http://localhost:5000/register",
+                  "http://127.0.0.1:5000/register",
                   {
                     name,
                     email,
-                    password
+                    password,
                   }
                 );
-                console.log(response)
-                console.log(response.data)
-                if(response.data){
-                    navigate("/signin");
+                console.log(response);
+                console.log(response.data);
+                if (response.data) {
+                  navigate("/signin");
                 }
                 // localStorage.setItem("token", response.data.token);
-                
               }}
               label={"Register"}
             />
@@ -64,9 +65,8 @@ export const Signup = () => {
             buttonText={"Sign in"}
             to={"/signin"}
           />
-                </div>
-            </div>
         </div>
-    )
-
-}
+      </div>
+    </div>
+  );
+};
