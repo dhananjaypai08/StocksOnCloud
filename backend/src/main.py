@@ -179,7 +179,7 @@ async def verify(request: Request):
 async def query(request: Request):
     data = await request.json()
     context = data["query"].lower()
-    email = data["email"]
+    # email = data["email"]
     clean_text = clean_context(context)
     tokens = clean_text.split()
     for token in tokens:
@@ -256,6 +256,38 @@ async def getData(symbol: str):
         return res
     except:
         return previous_echios_mock
+    
+@app.get("/getStockPrices")
+async def getData():
+    context = """Generate the top 8 stocks. 8 stocks for top gainers, 8 stocks for top loser and 8 stocks for most actively traded. The output data should be in this format without any newlines and I can convert it directly to dictionary using json.loads() in python : {
+    "metadata": "Top gainers, losers, and most actively traded US tickers",
+    "last_updated": "2024-07-26 16:16:00 US/Eastern",
+    "top_gainers": [
+        {
+            "ticker": "BNAIW",
+            "price": "0.1899",
+            "change_amount": "0.1299",
+            "change_percentage": "216.5%",
+            "volume": "403641"
+        }], ,
+    "top_losers": [
+        {
+            "ticker": "NBY",
+            "price": "0.7149",
+            "change_amount": "-1.2251",
+            "change_percentage": "-63.1495%",
+            "volume": "3997719"
+        }]"most_actively_traded": [
+        {
+            "ticker": "SLNA",
+            "price": "0.03",
+            "change_amount": "-0.0076",
+            "change_percentage": "-20.2128%",
+            "volume": "383567435"
+        }]
+        }"""
+    response = model.generate_content(context)
+    return response.text
    
 
 async def fetchData(symbol: str, interval = ""):
