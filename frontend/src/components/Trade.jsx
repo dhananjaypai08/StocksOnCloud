@@ -35,11 +35,7 @@ export const Trade = () => {
 
   //
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState({
-    success: false,
-    message: "",
-    transactionId: null,
-  });
+  const [transactionResult, setTransactionResult] = useState(null);
 
   const handleTrade = async (action) => {
     try {
@@ -52,31 +48,13 @@ export const Trade = () => {
       });
       console.log(response.data);
       //
-      if (response.data.success) {
-        setModalContent({
-          success: true,
-          message: "Transaction successful",
-          transactionId: response.data.id,
-        });
-      } else {
-        setModalContent({
-          success: false,
-          message: "Transaction failed",
-          transactionId: null,
-        });
-      }
-      //
+      setTransactionResult(response.data);
+      setIsModalOpen(true);
     } catch (error) {
       console.error("Error:", error);
-
-      //
-      setModalContent({
-        success: false,
-        message: "An error occurred",
-        transactionId: null,
-      });
+      setTransactionResult(false);
+      setIsModalOpen(true);
     }
-    setIsModalOpen(true);
   };
 
   const closeModal = () => {
@@ -140,19 +118,21 @@ export const Trade = () => {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {modalContent.success ? "Success" : "Error"}
-            </DialogTitle>
+            <DialogTitle>{transactionResult ? "Success" : "Error"}</DialogTitle>
             <DialogDescription>
-              {modalContent.message}
-              {modalContent.transactionId && (
-                <p>Transaction ID: {modalContent.transactionId}</p>
+              {transactionResult ? (
+                <>
+                  Transaction successful
+                  <p>Transaction ID: {transactionResult}</p>
+                </>
+              ) : (
+                "Transaction failed"
               )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={closeModal}>
-              {modalContent.success ? "Close" : "Try Again"}
+            <Button onClick={closeModal} className="bg-black text-white">
+              {transactionResult ? "Close" : "Try Again"}
             </Button>
           </DialogFooter>
         </DialogContent>
