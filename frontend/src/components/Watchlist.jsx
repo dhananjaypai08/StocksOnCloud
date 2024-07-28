@@ -15,9 +15,9 @@ export const Watchlist = () => {
     const fetchStocks = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=805P5TX180NU9SHR"
-        );
+        // const response = await axios.get(
+        //   "https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=QCGYT3S83M52SL5L"
+        // );
         const limitedStocks = Object.fromEntries(
           Object.entries(response.data).map(([key, value]) => [
             key,
