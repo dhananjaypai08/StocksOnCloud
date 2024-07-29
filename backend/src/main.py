@@ -33,7 +33,8 @@ INTENTS = {}
 USER_OTP = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-USER_TRANSACTIONS = {}
+os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
+USER_TRANSACTIONS = []
 
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
@@ -298,7 +299,21 @@ async def getData(symbol: str):
         return res
     except:
         return previous_echios_mock
-    
+
+import pandas as pd
+from pandasai import Agent   
+@app.post("/chatwithdata")
+async def chatData(request: Request):
+    query = await request.json()
+    query = query["query"]
+    data = USER_TRANSACTIONS
+    # data = {"stocks": data}
+    print(query)
+    agent = Agent(pd.DataFrame(data))
+    response = agent.chat(query)
+    return response
+
+
 @app.get("/getStockPrices")
 async def getData():
     context = """Generate the top 8 stocks. 8 stocks for top gainers, 8 stocks for top loser and 8 stocks for most actively traded. The output data should be in this format without any newlines and I can convert it directly to dictionary using json.loads() in python : {
@@ -343,4 +358,7 @@ async def fetchData(symbol: str, interval = ""):
             
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=5000, log_level="info", reload=True,  workers=4)
+    if os.environ.get("DEPLOYMENT") == "PROD":
+        uvicorn.run("main:app", port=5000, log_level="info", reload=False, workers=4)
+    else:
+        uvicorn.run("main:app", port=5000, log_level="info", reload=True,  workers=4)

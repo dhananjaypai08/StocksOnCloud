@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import abi from "../contracts/AMMPool.json";
 import address from "../contracts/address.json";
 // import axios from "axios";
@@ -17,6 +17,7 @@ export const Landing = () => {
   const [isConnected, setConnected] = useState(false);
   const [connectedMsg, setConnectedMsg] = useState("Please connect your wallet");
   const [provider, setProvider] = useState("");
+  const [signer, setSigner] = useState("");
 //   const email = localStorage.getItem("Email");
 
   //
@@ -42,6 +43,12 @@ export const Landing = () => {
 //       setIsModalOpen(true);
 //     }
 //   };
+  useEffect(() => {
+    // Code to be run after the component renders
+    const getBalance = async() => {
+
+    }
+  }, []);
 
   const connectWallet = async() => {
     if (window.ethereum) {
@@ -71,11 +78,14 @@ export const Landing = () => {
           }
         }
         const signer = provider.getSigner();
+        setSigner(signer);
         const contract = new ethers.Contract(
             address.address, 
             abi.abi,
             provider
         )
+        const resp = contract.getFunction();
+        console.log(resp)
         // const contractwithsigner = contract.connect(signer);
         const val = await contract.getConstantProduct();
         console.log(parseInt(val));
