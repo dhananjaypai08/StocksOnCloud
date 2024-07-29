@@ -1,0 +1,213 @@
+2024-07-29 16:09:45 [INFO] Question: Plot a graph for my current stocks with the actual prices in the market
+2024-07-29 16:09:46 [INFO] Running PandasAI with bamboo_llm LLM...
+2024-07-29 16:09:46 [INFO] Prompt ID: d9aa3dd7-185a-45fb-a136-f9b257e1c31d
+2024-07-29 16:09:46 [INFO] Executing Pipeline: GenerateChatPipeline
+2024-07-29 16:09:46 [INFO] Executing Step 0: ValidatePipelineInput
+2024-07-29 16:09:46 [INFO] Executing Step 1: CacheLookup
+2024-07-29 16:09:46 [INFO] Executing Step 2: PromptGeneration
+2024-07-29 16:09:47 [INFO] Using prompt: <dataframe>
+dfs[0]:0x0
+
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+
+
+
+
+### QUERY
+ Plot a graph for my current stocks with the actual prices in the market
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2024-07-29 16:09:48 [INFO] Executing Step 3: CodeGenerator
+2024-07-29 16:09:51 [INFO] Prompt used:
+            None
+            
+2024-07-29 16:09:51 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Assuming you have a dataframe named "stock_data" containing stock symbols and their prices
+# Sample data creation (replace this with your actual data)
+data = {'Stock': ['AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA'],
+        'Price': [145.12, 2735.29, 3406.83, 304.22, 679.82]}
+stock_data = pd.DataFrame(data)
+
+# Plotting the graph for current stocks with actual prices
+plt.figure(figsize=(10, 6))
+plt.bar(stock_data['Stock'], stock_data['Price'], color='skyblue')
+plt.xlabel('Stock')
+plt.ylabel('Price')
+plt.title('Current Stock Prices in the Market')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Save the plot as a PNG file
+plt.savefig('current_stock_prices.png')
+
+# Declare result variable as a dictionary
+result = {"type": "plot", "value": "current_stock_prices.png"}
+            ```
+            
+2024-07-29 16:09:51 [INFO] Executing Step 4: CachePopulation
+2024-07-29 16:09:51 [INFO] Executing Step 5: CodeCleaning
+2024-07-29 16:09:51 [INFO] Saving charts to C:\Users\New\Desktop\FE\backend\exports\charts\temp_chart.png
+2024-07-29 16:09:51 [INFO] 
+Code running:
+```
+data = {'Stock': ['AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA'], 'Price': [145.12, 2735.29, 3406.83, 304.22, 679.82]}
+stock_data = pd.DataFrame(data)
+plt.figure(figsize=(10, 6))
+plt.bar(stock_data['Stock'], stock_data['Price'], color='skyblue')
+plt.xlabel('Stock')
+plt.ylabel('Price')
+plt.title('Current Stock Prices in the Market')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('C:/Users/New/Desktop/FE/backend/exports/charts/temp_chart.png')
+result = {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/exports/charts/temp_chart.png'}
+        ```
+2024-07-29 16:09:51 [INFO] Executing Step 6: CodeExecution
+2024-07-29 16:09:53 [INFO] Executing Step 7: ResultValidation
+2024-07-29 16:09:54 [INFO] Answer: {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/exports/charts/temp_chart.png'}
+2024-07-29 16:09:54 [INFO] Executing Step 8: ResultParsing
+2024-07-29 16:12:03 [INFO] Question: Plot a graph for my current stocks and compare them with the current price of that stocks and also provide gains and loss for each stock
+2024-07-29 16:12:03 [INFO] Running PandasAI with bamboo_llm LLM...
+2024-07-29 16:12:03 [INFO] Prompt ID: bb358e15-4c7e-491b-a1bd-061c40ae051d
+2024-07-29 16:12:03 [INFO] Executing Pipeline: GenerateChatPipeline
+2024-07-29 16:12:03 [INFO] Executing Step 0: ValidatePipelineInput
+2024-07-29 16:12:03 [INFO] Executing Step 1: CacheLookup
+2024-07-29 16:12:03 [INFO] Executing Step 2: PromptGeneration
+2024-07-29 16:12:05 [INFO] Using prompt: <dataframe>
+dfs[0]:0x0
+
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+
+
+
+
+### QUERY
+ Plot a graph for my current stocks and compare them with the current price of that stocks and also provide gains and loss for each stock
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2024-07-29 16:12:05 [INFO] Executing Step 3: CodeGenerator
+2024-07-29 16:12:09 [INFO] Prompt used:
+            None
+            
+2024-07-29 16:12:09 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample data for demonstration
+data = {
+    'Stocks': ['ABC', 'DEF', 'GHI', 'JKL'],
+    'Current_Price': [100, 150, 80, 120],
+    'My_Stocks': [110, 140, 90, 130]
+}
+
+# Create a DataFrame from the sample data
+df = pd.DataFrame(data)
+
+# Calculate gains and losses
+df['Gain_Loss'] = df['My_Stocks'] - df['Current_Price']
+
+# Plotting the graph
+plt.figure(figsize=(10, 6))
+plt.bar(df['Stocks'], df['Current_Price'], color='b', alpha=0.7, label='Current Price')
+plt.bar(df['Stocks'], df['My_Stocks'], color='r', alpha=0.7, label='My Stocks')
+plt.xlabel('Stocks')
+plt.ylabel('Price')
+plt.title('Comparison of Current Price and My Stocks')
+plt.legend()
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Save the plot as a png file
+plt.savefig('stock_comparison.png')
+
+# Declare result variable
+result = {
+    "type": "plot",
+    "value": "stock_comparison.png"
+}
+            ```
+            
+2024-07-29 16:12:09 [INFO] Executing Step 4: CachePopulation
+2024-07-29 16:12:09 [INFO] Executing Step 5: CodeCleaning
+2024-07-29 16:12:09 [INFO] Saving charts to C:\Users\New\Desktop\FE\backend\exports\charts\temp_chart.png
+2024-07-29 16:12:09 [INFO] 
+Code running:
+```
+data = {'Stocks': ['ABC', 'DEF', 'GHI', 'JKL'], 'Current_Price': [100, 150, 80, 120], 'My_Stocks': [110, 140, 90, 130]}
+df = pd.DataFrame(data)
+df['Gain_Loss'] = df['My_Stocks'] - df['Current_Price']
+plt.figure(figsize=(10, 6))
+plt.bar(df['Stocks'], df['Current_Price'], color='b', alpha=0.7, label='Current Price')
+plt.bar(df['Stocks'], df['My_Stocks'], color='r', alpha=0.7, label='My Stocks')
+plt.xlabel('Stocks')
+plt.ylabel('Price')
+plt.title('Comparison of Current Price and My Stocks')
+plt.legend()
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('C:/Users/New/Desktop/FE/backend/exports/charts/temp_chart.png')
+result = {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/exports/charts/temp_chart.png'}
+        ```
+2024-07-29 16:12:09 [INFO] Executing Step 6: CodeExecution
+2024-07-29 16:12:09 [INFO] Executing Step 7: ResultValidation
+2024-07-29 16:12:09 [INFO] Answer: {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/exports/charts/temp_chart.png'}
+2024-07-29 16:12:09 [INFO] Executing Step 8: ResultParsing
