@@ -9,7 +9,9 @@ from model import UserModel, StockModel
 from pydantic import BaseModel
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
-from fastapi.responses import JSONResponse, FileResponse
+# from fastapi.responses import JSONResponse, FileResponse
+import pandas as pd
+from pandasai import Agent  
 
 import requests
 import google.generativeai as genai
@@ -300,8 +302,7 @@ async def getData(symbol: str):
     except:
         return previous_echios_mock
 
-import pandas as pd
-from pandasai import Agent   
+ 
 @app.post("/chatwithdata")
 async def chatData(request: Request):
     query = await request.json()
