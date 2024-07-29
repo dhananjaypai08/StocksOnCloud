@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export const Appbar = () => {
   const navigate = useNavigate();
+  const email = localStorage.getItem("Email");
 
   return (
     <div className="text-white border-b border-slate-800">
@@ -46,6 +47,9 @@ export const Appbar = () => {
         <div className="flex">
           <div className="p-2 mr-2">
             <button
+            onClick={() => {
+              navigate(`/portfolio?email=${email}`)
+            }}
               type="button"
               className="text-center font-semibold rounded-lg focus:ring-green-200 focus:none focus:outline-none hover:opacity-90 disabled:opacity-80 disabled:hover:opacity-80 relative overflow-hidden h-[32px] text-sm px-3 py-1.5 mr-4 "
             >

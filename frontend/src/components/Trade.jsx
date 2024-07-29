@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Select,
@@ -20,22 +20,35 @@ import {
 } from "@/components/ui/dialog";
 
 const stocks = [
-  { value: "AAPL", label: "Apple Inc." },
-  { value: "GOOGL", label: "Alphabet Inc." },
   { value: "MSFT", label: "Microsoft Corporation" },
-  { value: "AMZN", label: "Amazon.com, Inc." },
-  { value: "FB", label: "Meta Platforms, Inc." },
+  { value: "IBM", label: "Apple Inc." },
+  { value: "TSLA", label: "Tesla Inc" },
+  { value: "RACE", label: "Ferrari NV" },
 ];
 
-export const Trade = () => {
+export const Trade = ({data}) => {
   const [selectedStock, setSelectedStock] = useState(stocks[0].value);
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const email = localStorage.getItem("Email");
+  const lastDataPoint = data[data.length - 1];
 
-  //
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
+
+  useEffect(() => {
+    if (selectedStock === "MSFT") {
+      setPrice(lastDataPoint.value);
+    } else if(selectedStock === "IBM"){
+      setPrice("191.75"); // Static value for other stocks
+    }
+    else if(selectedStock === "TSLA"){
+      setPrice("219.00"); // Static value for other stocks
+    }
+    else if(selectedStock === "RACE"){
+      setPrice("413.00"); // Static value for other stocks
+    }
+  }, [selectedStock, lastDataPoint]);
 
   const handleTrade = async (action) => {
     try {
@@ -86,7 +99,7 @@ export const Trade = () => {
               type="number"
               placeholder="Price"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              readonly
               className="w-full bg-slate-900 mb-4"
             />
 
