@@ -8,16 +8,26 @@ import { Appbar } from "../components/Appbar";
 export const Home = () => {
   // const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([
-    { time: 1545436800, value: 32.51 },
-    { time: 1545523200, value: 31.11 },
-    { time: 1545609600, value: 27.02 },
-    { time: 1545696000, value: 27.32 },
-    { time: 1545782400, value: 25.17 },
-    { time: 1545868800, value: 28.89 },
-    { time: 1545955200, value: 25.46 },
-    { time: 1546041600, value: 23.92 },
-    { time: 1546128000, value: 22.68 },
-    { time: 1546214400, value: 22.67 },
+    { time: 1690761600, value: 403.87 },
+    { time: 1690848000, value: 403.45 },
+    { time: 1690934400, value: 403.40 },
+    { time: 1691020800, value: 403.21 },
+    { time: 1691107200, value: 403.38 },
+    { time: 1691193600, value: 403.54 },
+    { time: 1691280000, value: 403.32 },
+    { time: 1691366400, value: 402.96 },
+    { time: 1691452800, value: 403.05 },
+    { time: 1691539200, value: 403.41 },
+    { time: 1691625600, value: 403.73 },
+    { time: 1691712000, value: 403.42 },
+    { time: 1691798400, value: 402.99 },
+    { time: 1691884800, value: 402.88 },
+    { time: 1691971200, value: 402.34 },
+    { time: 1692057600, value: 402.76 },
+    { time: 1692144000, value: 403.12 },
+    { time: 1692230400, value: 402.89 },
+    { time: 1692316800, value: 403.45 },
+    { time: 1692403200, value: 403.21 }
   ]);
 
   const fetchData = async () => {

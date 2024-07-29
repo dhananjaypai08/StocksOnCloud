@@ -20,7 +20,7 @@ export const MarketBar = ({ data }) => {
               >
                 Current Price
               </p>
-              <p className="font-medium text-slate-300 text-sm text-sm tabular-nums">
+              <p className="font-medium text-slate-200 text-sm text-sm tabular-nums">
                 {lastDataPoint.value}
               </p>
             </div>
@@ -38,7 +38,7 @@ export const MarketBar = ({ data }) => {
               <p className="font-medium text-xs text-slate-400 text-sm">
                 24H High
               </p>
-              <p className="text-sm font-medium tabular-nums leading-5 text-sm ">
+              <p className="text-sm font-medium tabular-nums leading-5 text-sm text-slate-200">
                 401
               </p>
             </div>
@@ -46,7 +46,7 @@ export const MarketBar = ({ data }) => {
               <p className="font-medium text-xs text-slate-400 text-sm">
                 24H Low
               </p>
-              <p className="text-sm font-medium tabular-nums leading-5 text-sm ">
+              <p className="text-sm font-medium tabular-nums leading-5 text-sm text-slate-200">
                 384
               </p>
             </div>
@@ -59,7 +59,7 @@ export const MarketBar = ({ data }) => {
                 <p className="font-medium text-xs text-slate-400 text-sm">
                   24H Volume
                 </p>
-                <p className="mt-1 text-sm font-medium tabular-nums leading-5 text-sm ">
+                <p className="mt-1 text-sm font-medium tabular-nums leading-5 text-sm text-slate-200">
                   298176
                 </p>
               </div>
