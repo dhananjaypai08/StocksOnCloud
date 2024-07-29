@@ -13,42 +13,99 @@ const desiredChainId = 11155111;
 export const Landing = () => {
   const [selectedStock, setSelectedStock] = useState(stocks[0].value);
   const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [buyquantity, setbuyQuantity] = useState(1);
+  const [sellquantity, setsellQuantity] = useState(1);
   const [isConnected, setConnected] = useState(false);
   const [connectedMsg, setConnectedMsg] = useState("Please connect your wallet");
   const [provider, setProvider] = useState("");
   const [signer, setSigner] = useState("");
+  const [buyAmount, setbuyAmount] = useState(0);
+  const [sellAmount, setsellAmount] = useState(0);
+  const [constant_product, setConstantProduct] = useState();
+  const [getDataFeedETH, setDataFeedETH] = useState();
+  const [getDataFeedUSDC, setDataFeedUSDC] = useState();
+  const [contract, setContract] = useState();
+  const [contractwithsigner, setContractwithsigner] = useState();
 //   const email = localStorage.getItem("Email");
 
   //
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
 
-//   const handleTrade = async (action) => {
-//     try {
-//       const response = await axios.post("http://127.0.0.1:5000/transaction", {
-//         email: email,
-//         stock_name: selectedStock,
-//         price: parseFloat(price),
-//         quantity: parseInt(quantity),
-//         action: action,
-//       });
-//       console.log(response.data);
-//       //
-//       setTransactionResult(response.data);
-//       setIsModalOpen(true);
-//     } catch (error) {
-//       console.error("Error:", error);
-//       setTransactionResult(false);
-//       setIsModalOpen(true);
-//     }
-//   };
-  useEffect(() => {
-    // Code to be run after the component renders
-    const getBalance = async() => {
+  const buyAsset = async() => {
+    const contractdeployed = new ethers.Contract(
+      address.address,
+      abi.abi,
+      signer
+    );
+    const tx = await contractdeployed.buyAsset(buyquantity);
+    await tx.wait();
+    console.log(tx.hash);
+  //   if (window.ethereum) {
+  //     const provider = new ethers.BrowserProvider(window.ethereum);
+  //     const signer = await provider.getSigner();
+  //     const contractdeployed = new ethers.Contract(
+  //         address.address, 
+  //         abi.abi,
+  //         signer
+  //     )
+  //     console.log(signer, contractdeployed);
+  //     const tx = await contractdeployed.buyAsset(buyquantity);
+  //     await tx.wait();
+  //     console.log(tx.hash);
+  // }
 
+  }
+
+  const sellAsset = async() => {
+    const contract = new ethers.Contract(
+      address.address,
+      abi.abi,
+      signer
+    )
+    const tx = await contract.sellAsset(sellquantity);
+    await tx.wait();
+  }
+
+  const resetBalance = async() => {
+    const contract = new ethers.Contract(
+      address.address,
+      abi.abi,
+      signer
+    )
+    const tx = await contract.resetBal();
+    await tx.wait();
+  }
+
+  const setbuyChangeQuantity = async(value) => {
+    if(value<=0){
+      setbuyQuantity(1);
+      return ;
     }
-  }, []);
+    setbuyQuantity(value);
+    const contract = new ethers.Contract(
+      address.address,
+      abi.abi,
+      provider
+    )
+    let val = await contract.getbuyAssetAmt(value);
+    setbuyAmount(parseInt(val));
+  }
+
+  const setsellChangeQuantity = async(value) => {
+    if(value<=0){
+      setbuyQuantity(1);
+      return ;
+    }
+    setsellQuantity(value);
+    const contract = new ethers.Contract(
+      address.address,
+      abi.abi,
+      provider
+    )
+    let val = await contract.getsellAssetAmt(value);
+    setsellAmount(parseInt(val));
+  }
 
   const connectWallet = async() => {
     if (window.ethereum) {
@@ -77,25 +134,32 @@ export const Landing = () => {
             }
           }
         }
-        const signer = provider.getSigner();
+        const signer = await provider.getSigner();
         setSigner(signer);
         const contract = new ethers.Contract(
             address.address, 
             abi.abi,
             provider
         )
-        const resp = contract.getFunction();
-        console.log(resp)
+        const contractwithsigner = contract.connect(signer);
+        setConnectedMsg(account);
+        setConnected(true);
+        setContract(contract);
+        setContractwithsigner(contractwithsigner);
         // const contractwithsigner = contract.connect(signer);
-        const val = await contract.getConstantProduct();
-        console.log(parseInt(val));
+        let val = await contract.getConstantProduct();
+        setConstantProduct(parseInt(val));
+        val = await contract.getDataFeedETH();
+        setDataFeedETH(parseInt(val));
+        val = await contract.getDataFeedUSDC();
+        setDataFeedUSDC(parseInt(val));
+        val = await contract.getbuyAssetAmt(1);
+        setbuyAmount(parseInt(val));
+        val = await contract.getsellAssetAmt(1);
+        setsellAmount(parseInt(val));
     }
 
   }
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
 
   return (
     <>
@@ -103,14 +167,18 @@ export const Landing = () => {
         <header>
           <title className="text-2xl font-bold">Trade Crypto</title>
         </header>
-        <h4 className="space-y-4">
         <button
               onClick={() => connectWallet()}
               className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
             >
-              Buy
+              Connect
             </button>
-          <select onValueChange={setSelectedStock} defaultValue={selectedStock}>
+        <h4 className="space-y-4">
+          {isConnected && 
+          <>
+          <div>{connectedMsg}</div>
+       
+          {/* <select onValueChange={setSelectedStock} defaultValue={selectedStock}>
             <select className="w-full bg-black">
               <select placeholder="Select a stock" />
             </select>
@@ -121,39 +189,51 @@ export const Landing = () => {
                 </li>
               ))}
             </select>
-          </select>
+          </select> */}
 
           <div className="mt-4">
             <input
               type="number"
               placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              value={buyAmount}
+              disabled
               className="w-full bg-slate-900 mb-4"
             />
 
             <input
               type="number"
               placeholder="Quantity"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              value={buyquantity}
+              onChange={(e) => setbuyChangeQuantity(e.target.value)}
               className="w-full bg-slate-900"
             />
-          </div>
-          <div className="space-y-2 pt-6">
-            <button
-              
-              className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
-            >
+
+            <button onClick={() => buyAsset()} className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg">
               Buy
             </button>
-            <button
-              
-              className="w-full bg-red-600 hover:bg-red-700 h-12 text-lg"
-            >
+          </div>
+          <div className="space-y-2 pt-6">
+          <input
+              type="number"
+              placeholder="Price"
+              value={sellAmount}
+              disabled
+              className="w-full bg-slate-900 mb-4"
+            />
+
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={sellquantity}
+              onChange={(e) => setsellChangeQuantity(e.target.value)}
+              className="w-full bg-slate-900"
+            />
+
+            <button className="w-full bg-red-600 hover:bg-red-700 h-12 text-lg" onClick={() => sellAsset()}>
               Sell
             </button>
           </div>
+          </>}
         </h4>
       </h1>
     </>

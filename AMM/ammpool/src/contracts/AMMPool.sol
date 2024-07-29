@@ -44,6 +44,12 @@ contract StocksOnCloud {
 
     }
 
+    function resetBal() public returns(bool){
+        USDC_BALANCE = 175834;
+        ETH_BALANCE = 50;
+        return true;
+    }
+
 
     function getDataFeedETH() public view returns (int, uint8) {
         // prettier-ignore
@@ -93,6 +99,14 @@ contract StocksOnCloud {
         return amountTobePaid;
     }
 
+    function getbuyAssetAmt(uint256 _quantity) external view returns(uint256){
+        // Buy ETH for USDC
+        uint256 updatedETH = ETH_BALANCE - _quantity;
+        uint256 updatedUSDC = getConstantProduct() / updatedETH;
+        uint256 amountTobePaid = updatedUSDC - USDC_BALANCE;
+        return amountTobePaid;
+    }
+
     function sellAsset(uint256 _quantity) external returns(uint256){
         // Sell ETH for USDC, give eth get usdc
         uint256 updatedETH = ETH_BALANCE + _quantity;
@@ -100,6 +114,13 @@ contract StocksOnCloud {
         uint256 receivedUSDC = USDC_BALANCE - updatedUSDC;
         ETH_BALANCE = updatedETH;
         USDC_BALANCE = updatedUSDC;
+        return receivedUSDC;
+    }
+    function getsellAssetAmt(uint256 _quantity) external view returns(uint256){
+        // Sell ETH for USDC, give eth get usdc
+        uint256 updatedETH = ETH_BALANCE + _quantity;
+        uint256 updatedUSDC = getConstantProduct() / updatedETH;
+        uint256 receivedUSDC = USDC_BALANCE - updatedUSDC;
         return receivedUSDC;
     }
 
