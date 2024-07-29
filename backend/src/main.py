@@ -1,14 +1,15 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile
 from contextlib import asynccontextmanager
 import uvicorn
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import BackgroundTasks
 
 from model import UserModel, StockModel
 from pydantic import BaseModel
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 import requests
 import google.generativeai as genai
@@ -21,6 +22,7 @@ from pymongo.server_api import ServerApi
 from hashlib import sha256 
 from datetime import datetime
 import random
+from fpdf import FPDF
 
 load_dotenv()
 
@@ -31,6 +33,7 @@ INTENTS = {}
 USER_OTP = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+USER_TRANSACTIONS = {}
 
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
@@ -235,13 +238,52 @@ async def transact(request: Request):
         return str(data.inserted_id)
     
 @app.get("/getOrderBook")
-async def getOrderBook(email: str):
+async def getOrderBook(email: str, background_tasks: BackgroundTasks):
     user = userCollection.find_one({"email": email})
     if not user:
         return {"success": False}
     stocks = stockCollection.find({"user": user})
     data = [{"id": str(stock["_id"]), "name": stock["name"], "current_price": stock["current_price"], "quantity": stock["quantity"], "action": stock["action"], "time": stock["timestamp"]} for stock in stocks]
+    global USER_TRANSACTIONS
+    USER_TRANSACTIONS = data
+    background_tasks.add_task(getReport, email)
     return data
+
+async def getReport(email: str):
+    user = userCollection.find_one({"email": email})
+    if not user:
+        return {"success": False}
+    time = datetime.now()
+    todaydate = time.strftime("%d/%m/%Y %H:%M:%S")
+    newquery = "I have this list of data consisting of stock_id, stock name, current price, quantity, action. Generate a report"
+    newquery += " and provide a detailed analysis and give strategies and all this based on after comparing it current stocks data."
+    newquery += " Provide the text in simple textual format with clean texts and no additional formatting."
+    newquery += f" The data is: {str(USER_TRANSACTIONS)}. Make sure the generated text is in legal document format all data in a single line. Todays data: {todaydate}"
+    answer = model.generate_content(newquery)
+    text = answer.text
+    print(text)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    lines = text.split('\n')
+    line_height = pdf.font_size * 2  # Adjust as needed
+    for line in lines:
+        if line.startswith("**"):
+            pdf.set_font("Arial", size=12, style='B')  # Bold
+            line = line[2:]
+            line = re.sub(r'\*\*', '', line)
+        elif line.startswith("*"):
+            pdf.set_font("Arial", size=12, style='I')  # Italic
+            line = line[1:]
+            line = re.sub(r'\*\*', '', line)
+        else:
+            pdf.set_font("Arial", size=12)
+            line = re.sub(r'\*\*', '', line)
+        #pdf.cell(0, line_height, line, ln=1)
+        pdf.multi_cell(0, line_height, line)
+    pdf.output("src/media/reports.pdf")
+    return True 
+
 
 @app.get("/echios")
 async def getData(symbol: str):
@@ -301,6 +343,4 @@ async def fetchData(symbol: str, interval = ""):
             
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=5000, log_level="info", reload=True)
-
-
+    uvicorn.run("main:app", port=5000, log_level="info", reload=True,  workers=4)
