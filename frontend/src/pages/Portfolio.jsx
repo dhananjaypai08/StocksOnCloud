@@ -1,239 +1,301 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
-import Chart from 'chart.js/auto';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+  }).format(value);
+};
+
+const chartDATAA = [
+  { month: "January", value: 186 },
+  { month: "February", value: 305 },
+  { month: "March", value: 237 },
+  { month: "April", value: 73 },
+  { month: "May", value: 209 },
+  { month: "June", value: 214 },
+];
 
 export const Portfolio = () => {
   const [portfolioData, setPortfolioData] = useState([]);
-  const [currentValues, setCurrentValues] = useState({});
-  const [portfolioMetrics, setPortfolioMetrics] = useState({
-    totalValue: 0,
-    gainLoss: 0,
-    gainLossPercentage: 0
+  const [portfolioValue, setPortfolioValue] = useState(0);
+  const [todayGainLoss, setTodayGainLoss] = useState({
+    value: 0,
+    percentage: 0,
   });
-
-  const lineChartRef = useRef(null);
-  const pieChartRef = useRef(null);
+  const [overallGainLoss, setOverallGainLoss] = useState({
+    value: 0,
+    percentage: 0,
+  });
+  const [chartData, setChartData] = useState([]);
+  const [pieChartData, setPieChartData] = useState([]);
 
   useEffect(() => {
     fetchPortfolioData();
   }, []);
 
-  useEffect(() => {
-    if (portfolioData.length > 0) {
-      fetchCurrentValues();
-    }
-  }, [portfolioData]);
-
-  useEffect(() => {
-    if (portfolioData.length > 0 && currentValues.hasOwnProperty('tsla')) {
-      createCharts();
-    }
-  }, [portfolioData, currentValues]);
-
   const fetchPortfolioData = async () => {
-    const mockApiResponse = [
-      {"id":"66a61698e6cdc43059b54a62","name":"tsla","current_price":789,"quantity":2,"action":"BUY","time":"28/07/2024 15:29:52"},
-      {"id":"66a616decec3f10a04647e2d","name":"ibm","current_price":200,"quantity":10,"action":"SELL","time":"28/07/2024 15:31:02"},
-      {"id":"66a61b30aa9b3a2b6984a59b","name":"AAPL","current_price":998,"quantity":10,"action":"BUY","time":"28/07/2024 15:49:28"},
-      {"id":"66a61b51aa9b3a2b6984a59c","name":"AAPL","current_price":10,"quantity":1,"action":"BUY","time":"28/07/2024 15:50:01"},
-      {"id":"66a61e391da36404644e975d","name":"ibm","current_price":200,"quantity":null,"action":"SELL","time":"28/07/2024 16:02:25"}
-    ];
-    setPortfolioData(mockApiResponse);
+    try {
+      const response = await fetch("YOUR_DB_API_ENDPOINT");
+      const data = await response.json();
+      setPortfolioData(data);
+      calculatePortfolioMetrics(data);
+    } catch (error) {
+      console.error("Error fetching portfolio data:", error);
+    }
   };
 
-  const fetchCurrentValues = async () => {
-    const mockCurrentValues = {
-      "tsla": 800,
-      "ibm": 210,
-      "AAPL": 1000
-    };
-    setCurrentValues(mockCurrentValues);
-    calculatePortfolioMetrics(mockCurrentValues);
-  };
-
-  const calculatePortfolioMetrics = (currentPrices) => {
-    let totalValue = 0;
-    let initialValue = 0;
-
-    portfolioData.forEach(stock => {
-      if (stock.action === "BUY" && stock.quantity) {
-        totalValue += stock.quantity * currentPrices[stock.name];
-        initialValue += stock.quantity * stock.current_price;
-      }
-    });
-
-    const gainLoss = totalValue - initialValue;
-    const gainLossPercentage = (gainLoss / initialValue) * 100;
-
-    setPortfolioMetrics({
-      totalValue,
-      gainLoss,
-      gainLossPercentage
-    });
-  };
-
-  const getPortfolioGrowthData = () => {
-    let runningTotal = 0;
-    return portfolioData
-      .filter(stock => stock.action === "BUY" && stock.quantity)
-      .map(stock => {
-        runningTotal += stock.quantity * stock.current_price;
-        return {
-          time: new Date(stock.time),
-          value: runningTotal
-        };
+  const fetchCurrentMarketPrices = async (stockNames) => {
+    try {
+      const response = await fetch("YOUR_CURRENT_PRICE_API_ENDPOINT", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stocks: stockNames }),
       });
+      const data = await response.json();
+      return data.reduce((acc, stock) => {
+        acc[stock.name] = stock.price;
+        return acc;
+      }, {});
+    } catch (error) {
+      console.error("Error fetching current market prices:", error);
+      return {};
+    }
   };
 
-  const getStockTypeData = () => {
-    const stockCounts = {};
-    portfolioData.forEach(stock => {
-      if (stock.action === "BUY" && stock.quantity) {
-        stockCounts[stock.name] = (stockCounts[stock.name] || 0) + stock.quantity;
+  const calculatePortfolioMetrics = async (data) => {
+    const stockNames = [...new Set(data.map((stock) => stock.name))];
+    const currentPrices = await fetchCurrentMarketPrices(stockNames);
+
+    let totalValue = 0;
+    let totalCost = 0;
+    let stockQuantities = {};
+    let stockValues = {};
+
+    for (const transaction of data) {
+      const { name, quantity, action, current_price } = transaction;
+
+      if (action === "BUY") {
+        stockQuantities[name] = (stockQuantities[name] || 0) + quantity;
+        totalCost += current_price * quantity;
+      } else if (action === "SELL") {
+        stockQuantities[name] = (stockQuantities[name] || 0) - (quantity || 0);
       }
-    });
-    return Object.entries(stockCounts).map(([name, value]) => ({ name, value }));
-  };
-
-  const createCharts = () => {
-    const growthData = getPortfolioGrowthData();
-    const stockTypeData = getStockTypeData();
-
-    // Destroy existing charts if they exist
-    if (lineChartRef.current) {
-      lineChartRef.current.destroy();
-    }
-    if (pieChartRef.current) {
-      pieChartRef.current.destroy();
     }
 
-    // Create line chart
-    const lineCtx = document.getElementById('portfolioGrowthChart').getContext('2d');
-    lineChartRef.current = new Chart(lineCtx, {
-      type: 'line',
-      data: {
-        labels: growthData.map(d => d.time),
-        datasets: [{
-          label: 'Portfolio Value',
-          data: growthData.map(d => d.value),
-          borderColor: '#8884d8',
-          tension: 0.1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'day'
-            }
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Value ($)'
-            }
-          }
-        }
-      }
+    for (const [name, quantity] of Object.entries(stockQuantities)) {
+      const currentPrice = currentPrices[name] || 0;
+      const value = currentPrice * quantity;
+      totalValue += value;
+      stockValues[name] = value;
+    }
+
+    setPortfolioValue(totalValue);
+
+    const overallGain = totalValue - totalCost;
+    setOverallGainLoss({
+      value: overallGain,
+      percentage: (overallGain / totalCost) * 100,
     });
 
-    // Create pie chart
-    const pieCtx = document.getElementById('stockDistributionChart').getContext('2d');
-    pieChartRef.current = new Chart(pieCtx, {
-      type: 'pie',
-      data: {
-        labels: stockTypeData.map(d => d.name),
-        datasets: [{
-          data: stockTypeData.map(d => d.value),
-          backgroundColor: COLORS
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right'
-          }
-        }
-      }
+    // Mock calculation for today's gain/loss (replace with actual logic if you have historical data)
+    const todayGain = totalValue * 0.01; // Assuming 1% daily change
+    setTodayGainLoss({
+      value: todayGain,
+      percentage: (todayGain / totalValue) * 100,
     });
+
+    // Prepare chart data (mock data, replace with actual historical data if available)
+    const mockChartData = [
+      { month: "January", value: 186 },
+      { month: "February", value: 305 },
+      { month: "March", value: 237 },
+      { month: "April", value: 73 },
+      { month: "May", value: 209 },
+      { month: "June", value: 214 },
+    ];
+    setChartData(mockChartData);
+
+    // Prepare pie chart data
+    setPieChartData(
+      Object.entries(stockValues).map(([name, value]) => ({ name, value }))
+    );
   };
 
   return (
-    <div className="p-4 bg-gray-900 text-white min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Stock Portfolio Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-gray-800">
-          <CardHeader>
-            <CardTitle>Total Portfolio Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">${portfolioMetrics.totalValue.toFixed(2)}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gray-800">
-          <CardHeader>
-            <CardTitle>Gain/Loss</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              {portfolioMetrics.gainLoss >= 0 ? (
-                <ArrowUpIcon className="text-green-500 mr-2" />
-              ) : (
-                <ArrowDownIcon className="text-red-500 mr-2" />
-              )}
-              <p className={`text-2xl font-bold ${portfolioMetrics.gainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                ${Math.abs(portfolioMetrics.gainLoss).toFixed(2)}
-              </p>
+    <div className="bg-black text-foreground p-6 min-h-screen">
+      <Card className="mb-6 bg-black border border-gray-100 text-slate-200">
+        <CardHeader>
+          <CardTitle>Portfolio Value</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-4xl font-bold">
+            {formatCurrency(portfolioValue)}
+          </div>
+          <div className="flex justify-between mt-4">
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Today's Gain/Loss
+              </div>
+              <div
+                className={`flex items-center ${
+                  todayGainLoss.value >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {todayGainLoss.value >= 0 ? (
+                  <ArrowUpIcon className="mr-1" size={16} />
+                ) : (
+                  <ArrowDownIcon className="mr-1" size={16} />
+                )}
+                <span>
+                  {formatCurrency(Math.abs(todayGainLoss.value))} (
+                  {todayGainLoss.percentage.toFixed(2)}%)
+                </span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gray-800">
-          <CardHeader>
-            <CardTitle>Gain/Loss Percentage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              {portfolioMetrics.gainLossPercentage >= 0 ? (
-                <ArrowUpIcon className="text-green-500 mr-2" />
-              ) : (
-                <ArrowDownIcon className="text-red-500 mr-2" />
-              )}
-              <p className={`text-2xl font-bold ${portfolioMetrics.gainLossPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {Math.abs(portfolioMetrics.gainLossPercentage).toFixed(2)}%
-              </p>
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Overall Gain/Loss
+              </div>
+              <div
+                className={`flex items-center ${
+                  overallGainLoss.value >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {overallGainLoss.value >= 0 ? (
+                  <ArrowUpIcon className="mr-1" size={16} />
+                ) : (
+                  <ArrowDownIcon className="mr-1" size={16} />
+                )}
+                <span>
+                  {formatCurrency(Math.abs(overallGainLoss.value))} (
+                  {overallGainLoss.percentage.toFixed(2)}%)
+                </span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-gray-800">
-          <CardHeader>
-            <CardTitle>Portfolio Growth</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <canvas id="portfolioGrowthChart"></canvas>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gray-800">
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6 bg-black border border-gray-100 text-slate-200">
+        <CardHeader>
+          <CardTitle>Portfolio Performance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartDATAA}>
+                <XAxis dataKey="month" stroke="#ffffff" />
+                <YAxis stroke="#ffffff" />
+                <Tooltip
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{ backgroundColor: "#333", border: "none" }}
+                  labelStyle={{ color: "#fff" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: "#8884d8" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+        <Card className="bg-black border border-gray-100 text-slate-200">
           <CardHeader>
             <CardTitle>Stock Distribution</CardTitle>
           </CardHeader>
-          <CardContent className="h-80">
-            <canvas id="stockDistributionChart"></canvas>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
+                >
+                  {pieChartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => formatCurrency(value)} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-black border border-gray-100 text-slate-200">
+          <CardHeader>
+            <CardTitle>Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {portfolioData.slice(0, 5).map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.name}</TableCell>
+                    <TableCell
+                      className={
+                        transaction.action === "BUY"
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }
+                    >
+                      {transaction.action}
+                    </TableCell>
+                    <TableCell>{transaction.quantity || "All"}</TableCell>
+                    <TableCell>
+                      {formatCurrency(transaction.current_price)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
