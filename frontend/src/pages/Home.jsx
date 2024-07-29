@@ -75,7 +75,7 @@ export const Home = () => {
         <div className="w-[10px] flex-col border-slate-800 border-l"></div>
         <div>
           <div className="flex flex-col w-[250px]">
-            <Trade />
+            <Trade data={data}/>
           </div>
         </div>
       </div>
