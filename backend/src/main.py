@@ -221,7 +221,7 @@ async def query(request: Request):
             #         company_name = tokens[placeholder+1]
             #         data = requests.post("http://localhost:5000/transaction", {"email": email, })
 
-    new_query = data["query"] + ". Make sure the generated text is in dictionary format such that I can convert the generated data to dictionary easily in python using json.loads function to convert the text to dict and without new lines and without endlines"
+    new_query = data["query"] + ". Make sure the generated text is strictly in dictionary format such that I can convert the generated data from response.text to dictionary easily in python using json.loads function to convert the text to dict and strictly without new lines and without endlines"
     response = model.generate_content(new_query)
     print(response.text)
     data = json.loads(str(response.text))
