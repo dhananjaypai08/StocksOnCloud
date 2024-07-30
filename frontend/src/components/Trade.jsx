@@ -99,7 +99,7 @@ export const Trade = ({data}) => {
               type="number"
               placeholder="Price"
               value={price}
-              readonly
+              readOnly
               className="w-full bg-slate-900 mb-4"
             />
 

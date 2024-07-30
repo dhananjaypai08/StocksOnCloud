@@ -21,6 +21,8 @@ import {
   Tooltip,
 } from "recharts";
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
@@ -31,28 +33,25 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-const chartDATAA = [
-  { month: "January", value: 186 },
-  { month: "February", value: 305 },
-  { month: "March", value: 237 },
-  { month: "April", value: 73 },
-  { month: "May", value: 209 },
-  { month: "June", value: 214 },
-];
 
 export const Portfolio = () => {
   const [portfolioData, setPortfolioData] = useState([]);
   const [portfolioValue, setPortfolioValue] = useState(0);
-  const [todayGainLoss, setTodayGainLoss] = useState({
-    value: 0,
-    percentage: 0,
-  });
-  const [overallGainLoss, setOverallGainLoss] = useState({
-    value: 0,
-    percentage: 0,
-  });
-  const [chartData, setChartData] = useState([]);
+  const [todayGainLoss, setTodayGainLoss] = useState({ value: 0, percentage: 0 });
+  const [overallGainLoss, setOverallGainLoss] = useState({ value: 0, percentage: 0 });
+  const [chartData, setChartData] = useState([
+    { month: "January", value: 0 },
+    { month: "February", value: 305 },
+    { month: "March", value: 237 },
+    { month: "April", value: 73 },
+    { month: "May", value: 209 },
+    { month: "June", value: 214 },
+  ]);
   const [pieChartData, setPieChartData] = useState([]);
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email");
+
+  
 
   useEffect(() => {
     fetchPortfolioData();
@@ -60,91 +59,53 @@ export const Portfolio = () => {
 
   const fetchPortfolioData = async () => {
     try {
-      const response = await fetch("YOUR_DB_API_ENDPOINT");
-      const data = await response.json();
+      const response = await axios.get(`http://127.0.0.1:5000/getOrderBook?email=${email}`);
+      const data = await response.data;
       setPortfolioData(data);
       calculatePortfolioMetrics(data);
+      
+      const filteredData = data.filter(item => item.action == "BUY");
+      const pieData = filteredData.map(item => ({
+        name: item.name,
+        value: item.quantity
+      }));
+      setPieChartData(pieData);
+      
+    
     } catch (error) {
       console.error("Error fetching portfolio data:", error);
     }
   };
 
-  const fetchCurrentMarketPrices = async (stockNames) => {
-    try {
-      const response = await fetch("YOUR_CURRENT_PRICE_API_ENDPOINT", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stocks: stockNames }),
-      });
-      const data = await response.json();
-      return data.reduce((acc, stock) => {
-        acc[stock.name] = stock.price;
-        return acc;
-      }, {});
-    } catch (error) {
-      console.error("Error fetching current market prices:", error);
-      return {};
-    }
-  };
-
-  const calculatePortfolioMetrics = async (data) => {
-    const stockNames = [...new Set(data.map((stock) => stock.name))];
-    const currentPrices = await fetchCurrentMarketPrices(stockNames);
-
+  const calculatePortfolioMetrics = (data) => {
     let totalValue = 0;
-    let totalCost = 0;
-    let stockQuantities = {};
-    let stockValues = {};
 
     for (const transaction of data) {
-      const { name, quantity, action, current_price } = transaction;
-
+      const {name, quantity, current_price, action, time } = transaction;
       if (action === "BUY") {
-        stockQuantities[name] = (stockQuantities[name] || 0) + quantity;
-        totalCost += current_price * quantity;
+        totalValue += current_price * quantity;
       } else if (action === "SELL") {
-        stockQuantities[name] = (stockQuantities[name] || 0) - (quantity || 0);
+        totalValue -= current_price * (quantity || 0);
       }
     }
-
-    for (const [name, quantity] of Object.entries(stockQuantities)) {
-      const currentPrice = currentPrices[name] || 0;
-      const value = currentPrice * quantity;
-      totalValue += value;
-      stockValues[name] = value;
-    }
-
     setPortfolioValue(totalValue);
 
-    const overallGain = totalValue - totalCost;
-    setOverallGainLoss({
-      value: overallGain,
-      percentage: (overallGain / totalCost) * 100,
-    });
-
-    // Mock calculation for today's gain/loss (replace with actual logic if you have historical data)
-    const todayGain = totalValue * 0.01; // Assuming 1% daily change
+    // Generate random values for today's gain/loss
+    const todayGain = (Math.random() - 0.5) * totalValue * 0.02; // Random value between -1% to 1% of total value
     setTodayGainLoss({
       value: todayGain,
       percentage: (todayGain / totalValue) * 100,
     });
 
-    // Prepare chart data (mock data, replace with actual historical data if available)
-    const mockChartData = [
-      { month: "January", value: 186 },
-      { month: "February", value: 305 },
-      { month: "March", value: 237 },
-      { month: "April", value: 73 },
-      { month: "May", value: 209 },
-      { month: "June", value: 214 },
-    ];
-    setChartData(mockChartData);
+    // Generate random values for overall gain/loss
+    const overallGain = (Math.random() - 0.5) * totalValue * 0.1; // Random value between -5% to 5% of total value
+    setOverallGainLoss({
+      value: overallGain,
+      percentage: (overallGain / totalValue) * 100,
+    });
 
-    // Prepare pie chart data
-    setPieChartData(
-      Object.entries(stockValues).map(([name, value]) => ({ name, value }))
-    );
   };
+
 
   return (
     <div className="bg-black text-foreground p-6 min-h-screen">
@@ -161,11 +122,7 @@ export const Portfolio = () => {
               <div className="text-sm text-muted-foreground">
                 Today's Gain/Loss
               </div>
-              <div
-                className={`flex items-center ${
-                  todayGainLoss.value >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
+              <div className={`flex items-center ${todayGainLoss.value >= 0 ? "text-green-500" : "text-red-500"}`}>
                 {todayGainLoss.value >= 0 ? (
                   <ArrowUpIcon className="mr-1" size={16} />
                 ) : (
@@ -181,11 +138,7 @@ export const Portfolio = () => {
               <div className="text-sm text-muted-foreground">
                 Overall Gain/Loss
               </div>
-              <div
-                className={`flex items-center ${
-                  overallGainLoss.value >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
+              <div className={`flex items-center ${overallGainLoss.value >= 0 ? "text-green-500" : "text-red-500"}`}>
                 {overallGainLoss.value >= 0 ? (
                   <ArrowUpIcon className="mr-1" size={16} />
                 ) : (
@@ -208,7 +161,7 @@ export const Portfolio = () => {
         <CardContent>
           <div className="w-full h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartDATAA}>
+              <LineChart data={chartData}>
                 <XAxis dataKey="month" stroke="#ffffff" />
                 <YAxis stroke="#ffffff" />
                 <Tooltip
@@ -230,36 +183,37 @@ export const Portfolio = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
-        <Card className="bg-black border border-gray-100 text-slate-200">
-          <CardHeader>
-            <CardTitle>Stock Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <Card className=" bg-black border border-gray-100 text-white">
+      <CardHeader>
+        <CardTitle>Stock Holdings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {pieChartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={pieChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <p>Loading chart data...</p>
+        )}
+      </CardContent>
+    </Card>
 
         <Card className="bg-black border border-gray-100 text-slate-200">
           <CardHeader>
