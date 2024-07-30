@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import abi from "../contracts/AMMPool.json";
 import address from "../contracts/address.json";
+import Loader from './Loader';
+import { Bar, Line } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 // import axios from "axios";
 const ethers = require("ethers");
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 const stocks = [
   { value: "ETH", label: "Ethereum" },
@@ -29,11 +34,61 @@ export const Landing = () => {
   const [txncomplete, setTxnComplete] = useState(false);
   const [liquidityAmount, setLiquidityAmount] = useState(0);
 //   const email = localStorage.getItem("Email");
+  const [constantProductHistory, setConstantProductHistory] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  //
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [transactionResult, setTransactionResult] = useState(null);
+  useEffect(() => {
+    if (isConnected) {
+      const interval = setInterval(() => {
+        updateData();
+      }, 10000); // Update every 10 seconds
 
+      return () => clearInterval(interval);
+    }
+  }, [isConnected]);
+
+  const updateData = async () => {
+    if (contract) {
+      await readValuesfromContract();
+      setConstantProductHistory(prev => [...prev, constant_product].slice(-20));
+    }
+  };
+
+  const priceChartData = {
+    labels: ['ETH', 'USDC'],
+    datasets: [
+      {
+        label: 'Current Price',
+        data: [getDataFeedETH, getDataFeedUSDC],
+        backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+        borderColor: ['rgb(75, 192, 192)', 'rgb(255, 99, 132)'],
+        borderWidth: 1
+      }
+    ]
+  };
+
+  const priceChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Current Token Prices',
+        color: 'white'
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { color: 'white' }
+      },
+      x: {
+        ticks: { color: 'white' }
+      }
+    },
+  };
 
   const readValuesfromContract = async() => {
     const contract = new ethers.Contract(
@@ -56,7 +111,8 @@ export const Landing = () => {
   }
 
   const buyAsset = async() => {
-    try{
+    setIsProcessing(true);
+    try {
       const contractdeployed = new ethers.Contract(
         address.address,
         abi.abi,
@@ -66,9 +122,12 @@ export const Landing = () => {
       await tx.wait();
       setTxnComplete(true);
       await readValuesfromContract();
-    } catch{
+    } catch {
       setTxnComplete(false);
       console.log("something went wrong");
+      setIsProcessing(false);
+    } finally {
+      setIsProcessing(false);
     }
   }
 
@@ -76,6 +135,7 @@ export const Landing = () => {
     if(liquidityAmount < 0){
       return false;
     }
+    setIsProcessing(true);
     try{
       const contractdeployed = new ethers.Contract(
         address.address,
@@ -89,6 +149,9 @@ export const Landing = () => {
     } catch{
       setTxnComplete(false);
       console.log("something went wrong");
+      setIsProcessing(false);
+    } finally {
+      setIsProcessing(false);
     }
 }
 
@@ -96,6 +159,7 @@ export const Landing = () => {
     if(liquidityAmount < 0){
       return false;
     }
+    setIsProcessing(true);
     try{
       const contractdeployed = new ethers.Contract(
         address.address,
@@ -109,10 +173,14 @@ export const Landing = () => {
     } catch{
       setTxnComplete(false);
       console.log("something went wrong");
+      setIsProcessing(false);
+    } finally {
+      setIsProcessing(false);
     }
 }
 
   const sellAsset = async() => {
+    setIsProcessing(true);
     try{
       const contractwsigner = new ethers.Contract(
         address.address,
@@ -126,21 +194,34 @@ export const Landing = () => {
     } catch{
       console.log("something went wrong");
       setTxnComplete(false);
+      setIsProcessing(false);
+    } finally {
+      setIsProcessing(false);
     }
     
   }
 
   const resetBalance = async() => {
-    const contract = new ethers.Contract(
-      address.address,
-      abi.abi,
-      signer
-    )
-    const tx = await contract.resetBal();
-    await tx.wait();
-    setTxnComplete(true);
-    await readValuesfromContract();
-  }
+    setIsProcessing(true);
+    try{
+      const contract = new ethers.Contract(
+        address.address,
+        abi.abi,
+        signer
+      )
+      const tx = await contract.resetBal();
+      await tx.wait();
+      setTxnComplete(true);
+      await readValuesfromContract();
+    } catch{
+      console.log("something went wrong")
+      setTxnComplete(false);
+      setIsProcessing(false);
+    } finally{
+      setIsProcessing(false);
+    }
+    
+  } 
 
   const setbuyChangeQuantity = async(value) => {
     if(value<=0){
@@ -230,98 +311,101 @@ export const Landing = () => {
   }
 
   return (
-    <>
-      <h1 className="w-full max-w-md bg-black text-white">
-        <header>
-          <title className="text-2xl font-bold">Trade Crypto</title>
+    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">Trade Crypto</h1>
+          <button
+            onClick={connectWallet}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+          >
+            {isConnected ? "Connected" : "Connect Wallet"}
+          </button>
         </header>
-        <button
-              onClick={() => connectWallet()}
-              className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
-            >
-              Connect
-            </button>
-        <h4 className="space-y-4">
-          {isConnected && 
-          <>
-          <div>{connectedMsg}</div>
-          {txncomplete &&  <p>Transaction completed!</p>}
-          <p>Total Value Locked: {constant_product}</p>
-          <p>Current ETH Price: {getDataFeedETH}</p>
-          <p>Current USDC Price: {getDataFeedUSDC}</p>
-          <div className="mt-4">
-            <input
-              type="number"
-              placeholder="Price"
-              value={buyAmount}
-              disabled
-              className="w-full bg-slate-900 mb-4"
-            />
 
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={buyquantity}
-              onChange={(e) => setbuyChangeQuantity(e.target.value)}
-              className="w-full bg-slate-900"
-            />
+        {isConnected && (
+          <div className="space-y-8">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+              <p className="text-lg mb-2">Connected Address: <span className="font-mono">{connectedMsg}</span></p>
+              {txncomplete && <p className="text-green-400 mt-2">Transaction completed!</p>}
+              <p className="text-xl font-semibold mt-4">Total Value Locked: {constant_product}</p>
+              <p>Current ETH Price: ${getDataFeedETH?.toFixed(2)}</p>
+              <p>Current USDC Price: ${getDataFeedUSDC?.toFixed(2)}</p>
+            </div>
 
-            <button onClick={() => buyAsset()} className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg">
-              Buy
-            </button>
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Token Price Chart</h2>
+              <Bar data={priceChartData} options={priceChartOptions} />
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Buy Asset</h2>
+              <input
+                type="number"
+                placeholder="Price"
+                value={buyAmount}
+                disabled
+                className="w-full bg-gray-700 text-white p-3 rounded-lg mb-4"
+              />
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={buyquantity}
+                onChange={(e) => setbuyChangeQuantity(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded-lg mb-4"
+              />
+              <button onClick={buyAsset} disabled={isProcessing} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
+                {isProcessing ? <Loader /> : 'Buy'}
+              </button>
+              
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Sell Asset</h2>
+              <input
+                type="number"
+                placeholder="Price"
+                value={sellAmount}
+                disabled
+                className="w-full bg-gray-700 text-white p-3 rounded-lg mb-4"
+              />
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={sellquantity}
+                onChange={(e) => setsellChangeQuantity(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded-lg mb-4"
+              />
+              <button onClick={sellAsset} disabled={isProcessing} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
+                {isProcessing ? <Loader /> : 'Sell'}
+              </button>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Add Liquidity</h2>
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={liquidityAmount}
+                onChange={(e) => setLiquidityAmount(e.target.value)}
+                className="w-full bg-gray-700 text-white p-3 rounded-lg mb-4"
+              />
+              <div className="grid grid-cols-2 gap-4">
+              <button onClick={addLiquidityETH} disabled={isProcessing} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
+                {isProcessing ? <Loader /> : 'Add ETH Liquidity'}
+              </button>
+              <button onClick={addLiquidityUSDC} disabled={isProcessing} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
+                {isProcessing ? <Loader /> : 'Add USDC Liquidity'}
+              </button>
+              </div>
+            </div>
+
+            <button onClick={resetBalance} disabled={isProcessing} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center">
+                {isProcessing ? <Loader /> : 'Reset Pool'}
+              </button>
           </div>
-          <div className="space-y-2 pt-6">
-          <input
-              type="number"
-              placeholder="Price"
-              value={sellAmount}
-              disabled
-              className="w-full bg-slate-900 mb-4"
-            />
-
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={sellquantity}
-              onChange={(e) => setsellChangeQuantity(e.target.value)}
-              className="w-full bg-slate-900"
-            />
-
-            <button className="w-full bg-red-600 hover:bg-red-700 h-12 text-lg" onClick={() => sellAsset()}>
-              Sell
-            </button>
-           
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={liquidityAmount}
-              onChange={(e) => setLiquidityAmount(e.target.value)}
-              className="w-full bg-slate-900"
-            />
-
-            <button className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg" onClick={() => addLiquidityETH()}>
-              Add ETH Liquidity to the pool
-            </button>
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={liquidityAmount}
-              onChange={(e) => setLiquidityAmount(e.target.value)}
-              className="w-full bg-slate-900"
-            />
-
-            <button onClick={() => addLiquidityUSDC()} className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg">
-              Add USDC Liquidity to the pool
-            </button> <br></br>
-
-            <button onClick={() => resetBalance()} className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg">
-              Reset Pool
-            </button>
-            
-          </div>
-          </>}
-        </h4>
-      </h1>
-    </>
+        )}
+      </div>
+    </div>
   );
 };
