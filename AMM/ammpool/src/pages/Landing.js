@@ -26,45 +26,108 @@ export const Landing = () => {
   const [getDataFeedUSDC, setDataFeedUSDC] = useState();
   const [contract, setContract] = useState();
   const [contractwithsigner, setContractwithsigner] = useState();
+  const [txncomplete, setTxnComplete] = useState(false);
+  const [liquidityAmount, setLiquidityAmount] = useState(0);
 //   const email = localStorage.getItem("Email");
 
   //
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionResult, setTransactionResult] = useState(null);
 
-  const buyAsset = async() => {
-    const contractdeployed = new ethers.Contract(
-      address.address,
-      abi.abi,
-      signer
-    );
-    const tx = await contractdeployed.buyAsset(buyquantity);
-    await tx.wait();
-    console.log(tx.hash);
-  //   if (window.ethereum) {
-  //     const provider = new ethers.BrowserProvider(window.ethereum);
-  //     const signer = await provider.getSigner();
-  //     const contractdeployed = new ethers.Contract(
-  //         address.address, 
-  //         abi.abi,
-  //         signer
-  //     )
-  //     console.log(signer, contractdeployed);
-  //     const tx = await contractdeployed.buyAsset(buyquantity);
-  //     await tx.wait();
-  //     console.log(tx.hash);
-  // }
 
-  }
-
-  const sellAsset = async() => {
+  const readValuesfromContract = async() => {
     const contract = new ethers.Contract(
       address.address,
       abi.abi,
-      signer
-    )
-    const tx = await contract.sellAsset(sellquantity);
-    await tx.wait();
+      provider
+    );
+    let val = await contract.getConstantProduct();
+    setConstantProduct(parseInt(val));
+    val= await contract.getDataFeedETH();
+    let decimals = 10**(parseInt(val[1]))
+    setDataFeedETH(parseInt(val[0])/decimals);
+    val = await contract.getDataFeedUSDC();
+    decimals = 10**(parseInt(val[1]))
+    setDataFeedUSDC(parseInt(val[0])/decimals);
+    val = await contract.getbuyAssetAmt(1);
+    setbuyAmount(parseInt(val));
+    val = await contract.getsellAssetAmt(1);
+    setsellAmount(parseInt(val));
+  }
+
+  const buyAsset = async() => {
+    try{
+      const contractdeployed = new ethers.Contract(
+        address.address,
+        abi.abi,
+        signer
+      );
+      const tx = await contractdeployed.buyAsset(buyquantity);
+      await tx.wait();
+      setTxnComplete(true);
+      await readValuesfromContract();
+    } catch{
+      setTxnComplete(false);
+      console.log("something went wrong");
+    }
+  }
+
+  const addLiquidityETH = async() => {
+    if(liquidityAmount < 0){
+      return false;
+    }
+    try{
+      const contractdeployed = new ethers.Contract(
+        address.address,
+        abi.abi,
+        signer
+      );
+      const tx = await contractdeployed.addLiquidityETH(liquidityAmount);
+      await tx.wait();
+      setTxnComplete(true);
+      await readValuesfromContract();
+    } catch{
+      setTxnComplete(false);
+      console.log("something went wrong");
+    }
+}
+
+  const addLiquidityUSDC = async() => {
+    if(liquidityAmount < 0){
+      return false;
+    }
+    try{
+      const contractdeployed = new ethers.Contract(
+        address.address,
+        abi.abi,
+        signer
+      );
+      const tx = await contractdeployed.addLiquidityUSDC(liquidityAmount);
+      await tx.wait();
+      setTxnComplete(true);
+      await readValuesfromContract();
+    } catch{
+      setTxnComplete(false);
+      console.log("something went wrong");
+    }
+}
+
+  const sellAsset = async() => {
+    try{
+      const contractwsigner = new ethers.Contract(
+        address.address,
+        abi.abi,
+        signer
+      )
+      const tx = await contractwsigner.sellAsset(sellquantity);
+      await tx.wait();
+      setTxnComplete(true);
+      await readValuesfromContract();
+    } catch{
+      console.log("something went wrong");
+      setTxnComplete(false);
+    }
+    
   }
 
   const resetBalance = async() => {
@@ -75,6 +138,8 @@ export const Landing = () => {
     )
     const tx = await contract.resetBal();
     await tx.wait();
+    setTxnComplete(true);
+    await readValuesfromContract();
   }
 
   const setbuyChangeQuantity = async(value) => {
@@ -106,6 +171,7 @@ export const Landing = () => {
     let val = await contract.getsellAssetAmt(value);
     setsellAmount(parseInt(val));
   }
+
 
   const connectWallet = async() => {
     if (window.ethereum) {
@@ -149,10 +215,12 @@ export const Landing = () => {
         // const contractwithsigner = contract.connect(signer);
         let val = await contract.getConstantProduct();
         setConstantProduct(parseInt(val));
-        val = await contract.getDataFeedETH();
-        setDataFeedETH(parseInt(val));
+        val= await contract.getDataFeedETH();
+        let decimals = 10**(parseInt(val[1]))
+        setDataFeedETH(parseInt(val[0])/decimals);
         val = await contract.getDataFeedUSDC();
-        setDataFeedUSDC(parseInt(val));
+        decimals = 10**(parseInt(val[1]))
+        setDataFeedUSDC(parseInt(val[0])/decimals);
         val = await contract.getbuyAssetAmt(1);
         setbuyAmount(parseInt(val));
         val = await contract.getsellAssetAmt(1);
@@ -177,20 +245,10 @@ export const Landing = () => {
           {isConnected && 
           <>
           <div>{connectedMsg}</div>
-       
-          {/* <select onValueChange={setSelectedStock} defaultValue={selectedStock}>
-            <select className="w-full bg-black">
-              <select placeholder="Select a stock" />
-            </select>
-            <select>
-              {stocks.map((stock) => (
-                <li key={stock.value} value={stock.value}>
-                  {stock.label}
-                </li>
-              ))}
-            </select>
-          </select> */}
-
+          {txncomplete &&  <p>Transaction completed!</p>}
+          <p>Total Value Locked: {constant_product}</p>
+          <p>Current ETH Price: {getDataFeedETH}</p>
+          <p>Current USDC Price: {getDataFeedUSDC}</p>
           <div className="mt-4">
             <input
               type="number"
@@ -232,6 +290,34 @@ export const Landing = () => {
             <button className="w-full bg-red-600 hover:bg-red-700 h-12 text-lg" onClick={() => sellAsset()}>
               Sell
             </button>
+           
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={liquidityAmount}
+              onChange={(e) => setLiquidityAmount(e.target.value)}
+              className="w-full bg-slate-900"
+            />
+
+            <button className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg" onClick={() => addLiquidityETH()}>
+              Add ETH Liquidity to the pool
+            </button>
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={liquidityAmount}
+              onChange={(e) => setLiquidityAmount(e.target.value)}
+              className="w-full bg-slate-900"
+            />
+
+            <button onClick={() => addLiquidityUSDC()} className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg">
+              Add USDC Liquidity to the pool
+            </button> <br></br>
+
+            <button onClick={() => resetBalance()} className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg">
+              Reset Pool
+            </button>
+            
           </div>
           </>}
         </h4>
