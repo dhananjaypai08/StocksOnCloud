@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -23,6 +23,7 @@ import {
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
@@ -35,6 +36,7 @@ const formatCurrency = (value) => {
 
 
 export const Portfolio = () => {
+  const navigate = useNavigate();
   const [portfolioData, setPortfolioData] = useState([]);
   const [portfolioValue, setPortfolioValue] = useState(0);
   const [todayGainLoss, setTodayGainLoss] = useState({ value: 0, percentage: 0 });
@@ -51,7 +53,25 @@ export const Portfolio = () => {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
 
-  
+  const handleDownload = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/download-report');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'reports.pdf';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  }
 
   useEffect(() => {
     fetchPortfolioData();
@@ -64,12 +84,27 @@ export const Portfolio = () => {
       setPortfolioData(data);
       calculatePortfolioMetrics(data);
       
-      const filteredData = data.filter(item => item.action == "BUY");
-      const pieData = filteredData.map(item => ({
-        name: item.name,
-        value: item.quantity
-      }));
-      setPieChartData(pieData);
+      
+    const groupedData = data.reduce((acc, item) => {
+      const existingStock = acc.find(stock => stock.name === item.name);
+      if (existingStock) {
+        existingStock.quantity += item.action === "BUY" ? item.quantity : -item.quantity;
+      } else {
+        acc.push({ name: item.name, quantity: item.action === "BUY" ? item.quantity : -item.quantity });
+      }
+      return acc;
+    }, []);
+
+    // Filter out stocks with zero quantity
+    const filteredData = groupedData.filter(item => item.quantity > 0);
+
+    // Prepare pie chart data
+    const pieData = filteredData.map(item => ({
+      name: item.name,
+      value: item.quantity
+    }));
+
+    setPieChartData(pieData);
       
     
     } catch (error) {
@@ -107,12 +142,23 @@ export const Portfolio = () => {
   };
 
 
+  
+
+
   return (
-    <div className="bg-black text-foreground p-6 min-h-screen">
-      <Card className="mb-6 bg-black border border-gray-100 text-slate-200">
-        <CardHeader>
-          <CardTitle>Portfolio Value</CardTitle>
-        </CardHeader>
+    <div className="bg-black text-foreground p-4 min-h-screen">
+      <Card className="mb-6 mt-4 bg-black border border-gray-100 text-slate-200">
+      <CardHeader>
+    <div className="flex justify-between">
+      <CardTitle>Portfolio Value</CardTitle>
+      <div className="flex gap-2">
+        <Button size="sm" variant="ghost" onClick={() => {
+          navigate('/home')
+        }}>Home</Button>
+        <Button size="sm" variant="download" onClick={handleDownload}>Generate Reports</Button>
+      </div>
+    </div>
+  </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold">
             {formatCurrency(portfolioValue)}

@@ -21,7 +21,7 @@ import {
 
 const stocks = [
   { value: "MSFT", label: "Microsoft Corporation" },
-  { value: "IBM", label: "Apple Inc." },
+  { value: "IBM", label: "IBM Inc." },
   { value: "TSLA", label: "Tesla Inc" },
   { value: "RACE", label: "Ferrari NV" },
 ];

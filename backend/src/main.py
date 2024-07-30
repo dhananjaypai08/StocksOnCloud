@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, UploadFile
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import uvicorn
 from pydantic import BaseModel
@@ -9,6 +10,7 @@ from model import UserModel, StockModel
 from pydantic import BaseModel
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
+from pathlib import Path
 # from fastapi.responses import JSONResponse, FileResponse
 # import pandas as pd
 # from pandasai import Agent  
@@ -286,6 +288,11 @@ async def getReport(email: str):
         pdf.multi_cell(0, line_height, line)
     pdf.output("src/media/reports.pdf")
     return True 
+
+@app.get("/download-report")
+async def download_report():
+    file_path = "src/media/reports.pdf"  # Replace with the correct path
+    return FileResponse(Path(os.getcwd(), file_path), media_type="application/pdf")
 
 
 @app.get("/echios")
