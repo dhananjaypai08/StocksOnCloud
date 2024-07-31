@@ -7,7 +7,7 @@ import { Appbar } from "../components/Appbar";
 import { Button } from "@/components/ui/button";
 
 export const Home = () => {
-  const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
+  // const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([
     { time: 1690761600, value: 403.87 },
     { time: 1690848000, value: 403.45 },
@@ -48,7 +48,7 @@ export const Home = () => {
   };
 
   // useEffect(() => {
-  //   const intervalId = setInterval(fetchData, 5000);
+  //   const intervalId = setInterval(fetchData, 3000);
   //   return () => clearInterval(intervalId);
   // }, []);
 

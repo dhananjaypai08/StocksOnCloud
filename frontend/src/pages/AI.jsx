@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 import axios from 'axios';
 import { Appbar } from '@/components/Appbar';
+import TermsAndConditionsModal from '@/components/TermsAndConditionsModal';
 
 export const AI = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(true);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -35,9 +37,14 @@ export const AI = () => {
     }
   };
 
+  const handleAcceptTerms = () => {
+    setShowTerms(false);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#131314]">
       <Appbar />
+      <TermsAndConditionsModal isOpen={showTerms} onAccept={handleAcceptTerms} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
           {messages.map((message, index) => (
@@ -60,10 +67,12 @@ export const AI = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
               className="flex-1 text-white p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#1E1F20]"
+              disabled={showTerms}
             />
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={showTerms}
             >
               <Send size={24} />
             </button>

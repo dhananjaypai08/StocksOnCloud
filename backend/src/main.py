@@ -38,7 +38,7 @@ INTENTS = {}
 USER_OTP = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
+# os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
 USER_TRANSACTIONS = {}
 
 genai.configure(api_key=GOOGLE_API_KEY)
