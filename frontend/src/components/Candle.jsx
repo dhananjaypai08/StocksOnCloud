@@ -71,7 +71,7 @@ export const Candle = () => {
       seriesRef.current.priceScale().applyOptions({
         autoScale: false, // disables auto scaling based on visible content
         scaleMargins: {
-          top: 0.5,
+          top: 0.3,
           bottom: 0.2,
         },
       });
@@ -92,7 +92,7 @@ export const Candle = () => {
         // if (initialData.length > 50) {
         //   initialData.shift(); // Remove the oldest candle if we have more than 50
         // }
-      }, 5000);
+      }, 2000);
 
       return () => {
         chart.remove();

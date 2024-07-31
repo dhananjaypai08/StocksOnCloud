@@ -12,8 +12,8 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
 from pathlib import Path
 # from fastapi.responses import JSONResponse, FileResponse
-import pandas as pd
-from pandasai import Agent  
+# import pandas as pd
+# from pandasai import Agent  
 
 import requests
 import google.generativeai as genai
@@ -37,7 +37,7 @@ INTENTS = {}
 USER_OTP = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
+# os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
 USER_TRANSACTIONS = {}
 
 genai.configure(api_key=GOOGLE_API_KEY)
