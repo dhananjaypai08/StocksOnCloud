@@ -34,7 +34,7 @@ export const Appbar = () => {
           <div className="text-sm pt-1 flex flex-col justify-center pl-8 cursor-pointer text-slate-500">
             <Link
               className="pointer pl-1 cursor-pointer relative group hover:text-white transition duration-300"
-              to="/crypto"
+              to="http://localhost:3000"
             >
               <span className="relative">
                 Crypto

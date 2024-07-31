@@ -12,8 +12,8 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
 from pathlib import Path
 # from fastapi.responses import JSONResponse, FileResponse
-# import pandas as pd
-# from pandasai import Agent  
+import pandas as pd
+from pandasai import Agent  
 
 import requests
 import google.generativeai as genai
@@ -37,8 +37,8 @@ INTENTS = {}
 USER_OTP = {}
 API_KEY = ""
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-# os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
-USER_TRANSACTIONS = []
+os.environ["PANDASAI_API_KEY"] = os.environ.get("PANDAS_AI_KEY")
+USER_TRANSACTIONS = {}
 
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
@@ -221,10 +221,10 @@ async def query(request: Request):
             #         company_name = tokens[placeholder+1]
             #         data = requests.post("http://localhost:5000/transaction", {"email": email, })
 
-    new_query = data["query"] + ". Make sure the generated text is strictly in dictionary format such that I can convert the generated data from response.text to dictionary easily in python using json.loads function to convert the text to dict and strictly without new lines and without endlines"
+    new_query = data["query"] #+ ". Make sure the generated text is strictly in dictionary format such that I can convert the generated data from response.text to dictionary easily in python using json.loads function to convert the text to dict and strictly without new lines and without endlines"
     response = model.generate_content(new_query)
     print(response.text)
-    data = json.loads(str(response.text))
+    data = response.text
     return data
 
 @app.post("/transaction")
@@ -250,6 +250,9 @@ async def getOrderBook(email: str, background_tasks: BackgroundTasks):
     stocks = stockCollection.find({"user": user})
     data = [{"id": str(stock["_id"]), "name": stock["name"], "current_price": stock["current_price"], "quantity": stock["quantity"], "action": stock["action"], "time": stock["timestamp"]} for stock in stocks]
     global USER_TRANSACTIONS
+    # for txn in data:
+    #     stock_name = txn["name"].lower()
+    #     USER_TRANSACTIONS[stock_name] = USER_TRANSACTIONS.get(stock_name, []) + [txn]
     USER_TRANSACTIONS = data
     background_tasks.add_task(getReport, email)
     return data
@@ -310,16 +313,16 @@ async def getData(symbol: str):
         return previous_echios_mock
 
  
-# @app.post("/chatwithdata")
-# async def chatData(request: Request):
-#     query = await request.json()
-#     query = query["query"]
-#     data = USER_TRANSACTIONS
-#     # data = {"stocks": data}
-#     print(query)
-#     agent = Agent(pd.DataFrame(data))
-#     response = agent.chat(query)
-#     return response
+@app.post("/chatwithdata")
+async def chatData(request: Request):
+    query = await request.json()
+    query = query["query"]
+    data = USER_TRANSACTIONS
+    print(query, data)
+    agent = Agent(pd.DataFrame(data))
+    print(pd.DataFrame(data))
+    response = agent.chat(query)
+    return response
 
 
 @app.get("/getStockPrices")

@@ -11,9 +11,9 @@ contract StocksOnCloud {
     AggregatorV3Interface internal dataFeedUSDC; 
     AggregatorV3Interface internal dataFeedETH;
     AggregatorV3Interface internal dataFeedBTC;
-    uint256 internal USDC_BALANCE = 175834;
-    uint256 internal ETH_BALANCE = 50;
-    uint256 internal BTC_BALANCE = 2;
+    uint256 public USDC_BALANCE = 175834;
+    uint256 public ETH_BALANCE = 50;
+    uint256 public BTC_BALANCE = 2;
 
     function getConstantProduct() public view returns (uint256) {
         uint256 newval = USDC_BALANCE * ETH_BALANCE;
