@@ -5,6 +5,7 @@ import { Signup } from "./pages/Signup";
 import { Portfolio } from "./pages/Portfolio";
 import { AI } from "./pages/AI";
 import { Landing } from "./pages/Landing";
+import { Candle } from "./pages/Candlestick";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/" element={<Landing />} />
           <Route path="/ai" element={<AI />} />
+          <Route path="/candle" element={<Candle/>} />
           {/* <Route path="/crypto" element={<Crypto/>} /> */} 
           
         </Routes>
