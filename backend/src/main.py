@@ -295,7 +295,7 @@ async def getReport(email: str):
 
 @app.get("/download-report")
 async def download_report():
-    file_path = "src/media/reports.pdf"  # Replace with the correct path
+    file_path = "media/reports.pdf"  # Replace with the correct path
     return FileResponse(Path(os.getcwd(), file_path), media_type="application/pdf")
 
 
