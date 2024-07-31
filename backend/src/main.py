@@ -11,9 +11,10 @@ from pydantic import BaseModel
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
 from pathlib import Path
+import random
 # from fastapi.responses import JSONResponse, FileResponse
-import pandas as pd
-from pandasai import Agent  
+# import pandas as pd
+# from pandasai import Agent  
 
 import requests
 import google.generativeai as genai
@@ -64,7 +65,7 @@ async def lifespan(app: FastAPI):
     # Load the ML model
     # pre process before the server starts
     global INTENTS 
-    with open("src/intent.json") as file:
+    with open("intent.json") as file:
         data = json.load(file)
     INTENTS = data 
     global API_KEY
@@ -114,7 +115,7 @@ def clean_context(text: str):
 
 @app.get("/test")
 async def home():
-    with open("src/intent.json") as f:
+    with open("intent.json") as f:
         data = json.load(f)
     data = userCollection.find()
     for user in data:
@@ -289,7 +290,7 @@ async def getReport(email: str):
             line = re.sub(r'\*\*', '', line)
         #pdf.cell(0, line_height, line, ln=1)
         pdf.multi_cell(0, line_height, line)
-    pdf.output("src/media/reports.pdf")
+    pdf.output("media/reports.pdf")
     return True 
 
 @app.get("/download-report")
@@ -310,19 +311,24 @@ async def getData(symbol: str):
         previous_echios_mock = res 
         return res
     except:
-        return previous_echios_mock
+        try:
+            price = previous_echios_mock["API_INFO"]["price"]
+            curr_val = random.uniform(price-1.5, price+1.5)
+            previous_echios_mock["API_INFO"]["price"] = curr_val
+            return previous_echios_mock
+        except:
+            data = previous_echios_mock
 
- 
-@app.post("/chatwithdata")
-async def chatData(request: Request):
-    query = await request.json()
-    query = query["query"]
-    data = USER_TRANSACTIONS
-    print(query, data)
-    agent = Agent(pd.DataFrame(data))
-    print(pd.DataFrame(data))
-    response = agent.chat(query)
-    return response
+# @app.post("/chatwithdata")
+# async def chatData(request: Request):
+#     query = await request.json()
+#     query = query["query"]
+#     data = USER_TRANSACTIONS
+#     print(query, data)
+#     agent = Agent(pd.DataFrame(data))
+#     print(pd.DataFrame(data))
+#     response = agent.chat(query)
+#     return response
 
 
 @app.get("/getStockPrices")
