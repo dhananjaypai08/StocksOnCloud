@@ -4,14 +4,13 @@ import { Watchlist } from "../components/Watchlist";
 import { MarketBar } from "../components/MarketBar";
 import { Trade } from "../components/Trade";
 import { Appbar } from "../components/Appbar";
-import { Button } from "@/components/ui/button";
 
 export const Home = () => {
   // const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([
     { time: 1690761600, value: 403.87 },
     { time: 1690848000, value: 403.45 },
-    { time: 1690934400, value: 403.40 },
+    { time: 1690934400, value: 403.4 },
     { time: 1691020800, value: 403.21 },
     { time: 1691107200, value: 403.38 },
     { time: 1691193600, value: 403.54 },
@@ -28,7 +27,7 @@ export const Home = () => {
     { time: 1692144000, value: 403.12 },
     { time: 1692230400, value: 402.89 },
     { time: 1692316800, value: 403.45 },
-    { time: 1692403200, value: 403.21 }
+    { time: 1692403200, value: 403.21 },
   ]);
 
   const fetchData = async () => {
@@ -69,7 +68,6 @@ export const Home = () => {
               <Watchlist />
             </div>
             <div className="flex flex-col flex-1">
-             
               <Chart className="mt-2" data={data} />
             </div>
           </div>
@@ -77,7 +75,7 @@ export const Home = () => {
         <div className="w-[10px] flex-col border-slate-800 border-l"></div>
         <div>
           <div className="flex flex-col w-[250px]">
-            <Trade data={data}/>
+            <Trade data={data} />
           </div>
         </div>
       </div>
