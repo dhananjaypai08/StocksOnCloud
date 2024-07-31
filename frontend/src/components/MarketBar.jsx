@@ -1,4 +1,8 @@
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
+
 export const MarketBar = ({ data }) => {
+  const navigate = useNavigate();
   const lastDataPoint = data[data.length - 1];
   const secondLastDataPoint = data.length > 1 ? data[data.length - 2] : null;
   const difference = secondLastDataPoint
@@ -50,18 +54,25 @@ export const MarketBar = ({ data }) => {
                 384
               </p>
             </div>
-            <button
-              type="button"
-              className="font-medium transition-opacity hover:opacity-80 hover:cursor-pointer text-base text-left"
-              data-rac=""
-            >
-              <div className="flex flex-col">
+            
+            <div className="flex flex-col">
                 <p className="font-medium text-xs text-slate-400 text-sm">
                   24H Volume
                 </p>
                 <p className="mt-1 text-sm font-medium tabular-nums leading-5 text-sm text-slate-200">
                   298176
                 </p>
+            </div>
+            <button
+            onClick={() => {
+              navigate(`/candle?key=msft`)
+            }}
+              type="button"
+              className="text-center font-semibold rounded-lg focus:ring-green-200 focus:none focus:outline-none hover:opacity-90 disabled:opacity-80 disabled:hover:opacity-80 relative overflow-hidden h-[32px] text-sm px-3 py-1.5 mr-4 "
+            >
+              <div className="absolute inset-0 bg-green-500 opacity-[16%]"></div>
+              <div className="flex flex-row items-center justify-center gap-4">
+                <p className="text-green-500">Go to candlestick</p>
               </div>
             </button>
           </div>

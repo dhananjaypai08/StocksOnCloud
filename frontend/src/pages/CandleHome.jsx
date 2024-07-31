@@ -4,9 +4,9 @@ import { Watchlist } from "../components/Watchlist";
 import { MarketBar } from "../components/MarketBar";
 import { Trade } from "../components/Trade";
 import { Appbar } from "../components/Appbar";
-import { Button } from "@/components/ui/button";
+import { Candle } from "../components/Candle";
 
-export const Home = () => {
+export const CandleHome = () => {
   const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([
     { time: 1690761600, value: 403.87 },
@@ -69,8 +69,7 @@ export const Home = () => {
               <Watchlist />
             </div>
             <div className="flex flex-col flex-1">
-             
-              <Chart className="mt-2" data={data} />
+              <Candle />
             </div>
           </div>
         </div>

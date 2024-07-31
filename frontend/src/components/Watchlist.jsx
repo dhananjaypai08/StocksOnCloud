@@ -110,6 +110,7 @@ export const Watchlist = () => {
             <TrendingUp className="mr-2 h-4 w-4" />
             Most Active
           </Button>
+          
         </div>
       </CardHeader>
       <CardContent className="pt-2">{renderStockList()}</CardContent>
