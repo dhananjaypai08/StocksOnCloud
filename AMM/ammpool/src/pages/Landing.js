@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import abi from "../contracts/AMMPool.json";
 import address from "../contracts/address.json";
 import Loader from './Loader';
-import { Bar, Line } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar, Line, Pie } from "react-chartjs-2";
+// import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 // import axios from "axios";
 const ethers = require("ethers");
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
+// ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
 const stocks = [
   { value: "ETH", label: "Ethereum" },
@@ -36,6 +38,8 @@ export const Landing = () => {
 //   const email = localStorage.getItem("Email");
   const [constantProductHistory, setConstantProductHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [usdc_balance, setUSDCBalance] = useState(0);
+  const [eth_balance, setETHBalance] = useState(0);
 
   useEffect(() => {
     if (isConnected) {
@@ -46,6 +50,36 @@ export const Landing = () => {
       return () => clearInterval(interval);
     }
   }, [isConnected]);
+
+
+  const pieChartData = {
+    labels: ['ETH', 'USDC'],
+    datasets: [
+      {
+        data: [eth_balance, usdc_balance],
+        backgroundColor: ['rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)'],
+        borderColor: ['rgb(75, 192, 192)', 'rgb(255, 99, 132)'],
+        borderWidth: 1
+      }
+    ]
+  };
+  
+  const pieChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          color: 'white'
+        }
+      },
+      title: {
+        display: true,
+        text: 'Total Value Locked Distribution',
+        color: 'white'
+      },
+    },
+  };
 
   const updateData = async () => {
     if (contract) {
@@ -108,6 +142,10 @@ export const Landing = () => {
     setbuyAmount(parseInt(val));
     val = await contract.getsellAssetAmt(1);
     setsellAmount(parseInt(val));
+    val = await contract.USDC_BALANCE();
+    setUSDCBalance(parseInt(val));
+    val = await contract.ETH_BALANCE();
+    setETHBalance(parseInt(val));
   }
 
   const buyAsset = async() => {
@@ -334,8 +372,17 @@ export const Landing = () => {
             </div>
 
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Token Price Chart</h2>
-              <Bar data={priceChartData} options={priceChartOptions} />
+              <h2 className="text-2xl font-bold mb-4">Pool Overview</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Token Price Chart</h3>
+                  <Bar data={priceChartData} options={priceChartOptions} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Total Value Locked: {constant_product}</h3>
+                  <Pie data={pieChartData} options={pieChartOptions} />
+                </div>
+              </div>
             </div>
 
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
