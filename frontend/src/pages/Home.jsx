@@ -6,7 +6,7 @@ import { Trade } from "../components/Trade";
 import { Appbar } from "../components/Appbar";
 
 export const Home = () => {
-  // const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
+  const apiUrl = `http://127.0.0.1:5000/echios?symbol=msft`;
   const [data, setData] = useState([
     { time: 1690761600, value: 403.87 },
     { time: 1690848000, value: 403.45 },

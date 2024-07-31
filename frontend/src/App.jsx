@@ -4,6 +4,7 @@ import { Signin } from "./pages/Signin";
 import { Signup } from "./pages/Signup";
 import { Portfolio } from "./pages/Portfolio";
 import { AI } from "./pages/AI";
+import { Landing } from "./pages/Landing";
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/home" element={<Home />} />
           <Route path="/portfolio" element={<Portfolio />} />
-          {/* <Route path="/" element={<Landing />} /> */}
+          <Route path="/" element={<Landing />} />
           <Route path="/ai" element={<AI />} />
           {/* <Route path="/crypto" element={<Crypto/>} /> */} 
           
