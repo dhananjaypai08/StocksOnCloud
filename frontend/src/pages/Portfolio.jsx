@@ -6,6 +6,7 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
+import TermsAndConditionsModal from '@/components/TermsAndConditionsModal';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -17,6 +18,7 @@ export const Portfolio = () => {
   const [overallGainLoss, setOverallGainLoss] = useState({ value: 0, percentage: 0 });
   const [chartData, setChartData] = useState([]);
   const [pieChartData, setPieChartData] = useState([]);
+  const [showTerms, setShowTerms] = useState(true);
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
 
@@ -30,6 +32,10 @@ export const Portfolio = () => {
   useEffect(() => {
     fetchPortfolioData();
   }, []);
+
+  const handleAcceptTerms = () => {
+    setShowTerms(false);
+  };
 
   const fetchPortfolioData = async () => {
     try {
@@ -171,6 +177,7 @@ export const Portfolio = () => {
 
   return (
     <div className="bg-black text-foreground p-4 min-h-screen">
+      <TermsAndConditionsModal isOpen={showTerms} onAccept={handleAcceptTerms} />
       <Card className="mb-6 mt-4 bg-black border border-gray-100 text-slate-200">
         <CardHeader>
           <div className="flex justify-between">
