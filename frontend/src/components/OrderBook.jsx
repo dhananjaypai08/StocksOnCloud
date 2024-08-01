@@ -41,7 +41,7 @@ const OrderBook = ({ orderBook }) => {
           <span>Quantity</span>
         </div>
         {sortedAsks.map((ask, index) => (
-          <TableRow2 key={index} price={ask.price} quantity={ask.quantity} bgColor="bg-red-500" />
+          <TableRow2 key={index} price={ask.price} quantity={ask.quantity} bgColor="bg-red-800" />
         ))}
       </div>
     </div>
