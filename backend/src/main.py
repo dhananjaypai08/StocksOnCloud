@@ -198,8 +198,10 @@ async def query(request: Request):
     clean_text = clean_context(context)
     tokens = clean_text.split()
     if "chart" in tokens or "plot" in tokens or "graph" in tokens:
-        requests.post(f"http://localhost:5001/plotdata?query={clean_text}")
-        return 
+        data["email"] = EMAIL
+        json_data = json.dumps(data)
+        resp = requests.post(f"http://localhost:5001/plotdata", json=json_data)
+        return "Plotted"
     for token in tokens:
         if INTENTS.get(token):
             if INTENTS[token] == "fetch":
@@ -255,6 +257,8 @@ async def transact(request: Request):
         time = datetime.now()
         stock_data = {"name": body["stock_name"], "current_price": body["price"], "quantity": body["quantity"], "action": body["action"], "timestamp": time.strftime("%d/%m/%Y %H:%M:%S"), "user": user}
         data = stockCollection.insert_one(stock_data)
+        global EMAIL 
+        EMAIL = email
         return str(data.inserted_id)
     
 @app.get("/getOrderBook")
@@ -271,6 +275,8 @@ async def getOrderBook(email: str, background_tasks: BackgroundTasks):
     USER_TRANSACTIONS = data
     task_data = {"data": data, "email": email}
     json_data = json.dumps(task_data)
+    global EMAIL 
+    EMAIL = email
     # redis_conn.rpush("generateReport", json_data)
     background_tasks.add_task(getReport, email)
     return data
