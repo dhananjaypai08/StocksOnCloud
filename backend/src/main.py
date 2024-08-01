@@ -12,6 +12,8 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from typing import List
 from pathlib import Path
 import random
+
+# import redis
 # from fastapi.responses import JSONResponse, FileResponse
 # import pandas as pd
 # from pandasai import Agent  
@@ -46,6 +48,8 @@ model = genai.GenerativeModel('gemini-pro')
 COMPANY_NAME = {"apple": "aapl", "infosys": "infy", "ibm": "ibm", "tata": "tcs", "tcs": "tcs"}
 
 uri = "mongodb+srv://soc:root@stockscluster.ffmfprp.mongodb.net/"
+# redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+
 client = None
 useruserCollection = None
 stockCollection = None
@@ -255,6 +259,9 @@ async def getOrderBook(email: str, background_tasks: BackgroundTasks):
     #     stock_name = txn["name"].lower()
     #     USER_TRANSACTIONS[stock_name] = USER_TRANSACTIONS.get(stock_name, []) + [txn]
     USER_TRANSACTIONS = data
+    task_data = {"data": data, "email": email}
+    json_data = json.dumps(task_data)
+    # redis_conn.rpush("generateReport", json_data)
     background_tasks.add_task(getReport, email)
     return data
 
