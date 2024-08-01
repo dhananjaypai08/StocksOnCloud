@@ -9,6 +9,8 @@ export const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [text, setText] = useState("**Navigation**: The first new name is dj\n1.)**starting**: new line");
+  
   const navigate = useNavigate();
   return (
     <div className="bg-black h-screen flex justify-center">
@@ -18,6 +20,7 @@ export const Signup = () => {
           <div className="text-slate-500 text-md pt-1 px-4 pb-4">
             Enter your credentials to access your account
           </div>
+          <pre>{text}</pre>
           <InputBox
             onChange={(e) => {
               setName(e.target.value);

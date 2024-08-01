@@ -1,0 +1,320 @@
+2024-08-01 15:14:24 [INFO] Question: Plot a graph based on the given data
+2024-08-01 15:14:24 [INFO] Running PandasAI with bamboo_llm LLM...
+2024-08-01 15:14:24 [INFO] Prompt ID: 21873329-a928-448b-b6b5-82cb72fdeef6
+2024-08-01 15:14:24 [INFO] Executing Pipeline: GenerateChatPipeline
+2024-08-01 15:14:24 [INFO] Executing Step 0: ValidatePipelineInput
+2024-08-01 15:14:24 [INFO] Executing Step 1: CacheLookup
+2024-08-01 15:14:24 [INFO] Executing Step 2: PromptGeneration
+2024-08-01 15:14:25 [INFO] Querying without using training data.
+2024-08-01 15:14:26 [INFO] Querying without using training docs.
+2024-08-01 15:14:26 [INFO] Using prompt: <dataframe>
+dfs[0]:10x4
+country,sales,deals_opened,deals_closed
+United States,7000,142,120
+Australia,2100,50,40
+Japan,5000,30,50
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+
+
+
+
+### QUERY
+ Plot a graph based on the given data
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2024-08-01 15:14:26 [INFO] Executing Step 3: CodeGenerator
+2024-08-01 15:14:30 [INFO] Prompt used:
+            None
+            
+2024-08-01 15:14:30 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Data
+data = {
+    "country": ["United States", "Australia", "Japan"],
+    "sales": [7000, 2100, 5000],
+    "deals_opened": [142, 50, 30],
+    "deals_closed": [120, 40, 50]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Plotting a graph
+plt.figure(figsize=(10, 6))
+plt.bar(df["country"], df["sales"], color='skyblue', label='Sales')
+plt.bar(df["country"], df["deals_opened"], color='salmon', label='Deals Opened')
+plt.bar(df["country"], df["deals_closed"], color='lightgreen', label='Deals Closed')
+
+plt.xlabel('Country')
+plt.ylabel('Value')
+plt.title('Sales and Deals Comparison by Country')
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Save the plot as a png file
+plt.savefig('sales_deals_comparison.png')
+
+# Declare result variable
+result = {"type": "plot", "value": "sales_deals_comparison.png"}
+            ```
+            
+2024-08-01 15:14:30 [INFO] Executing Step 4: CachePopulation
+2024-08-01 15:14:30 [INFO] Executing Step 5: CodeCleaning
+2024-08-01 15:14:30 [INFO] Saving charts to C:\Users\New\Desktop\FE\backend\src\exports\charts\temp_chart.png
+2024-08-01 15:14:30 [INFO] 
+Code running:
+```
+data = {'country': ['United States', 'Australia', 'Japan'], 'sales': [7000, 2100, 5000], 'deals_opened': [142, 50, 30], 'deals_closed': [120, 40, 50]}
+df = dfs[0]
+plt.figure(figsize=(10, 6))
+plt.bar(df['country'], df['sales'], color='skyblue', label='Sales')
+plt.bar(df['country'], df['deals_opened'], color='salmon', label='Deals Opened')
+plt.bar(df['country'], df['deals_closed'], color='lightgreen', label='Deals Closed')
+plt.xlabel('Country')
+plt.ylabel('Value')
+plt.title('Sales and Deals Comparison by Country')
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png')
+result = {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png'}
+        ```
+2024-08-01 15:14:30 [INFO] Executing Step 6: CodeExecution
+2024-08-01 15:14:31 [INFO] Executing Step 7: ResultValidation
+2024-08-01 15:14:31 [INFO] Answer: {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png'}
+2024-08-01 15:14:31 [INFO] Executing Step 8: ResultParsing
+2024-08-01 15:15:32 [INFO] Question: No need to rely on the given dataframe, just plot me the current top gainers chart using pie chart
+2024-08-01 15:15:33 [INFO] Running PandasAI with bamboo_llm LLM...
+2024-08-01 15:15:33 [INFO] Prompt ID: 7ccf4f90-14d9-484b-a4e0-5373d0251de4
+2024-08-01 15:15:33 [INFO] Executing Pipeline: GenerateChatPipeline
+2024-08-01 15:15:33 [INFO] Executing Step 0: ValidatePipelineInput
+2024-08-01 15:15:33 [INFO] Executing Step 1: CacheLookup
+2024-08-01 15:15:33 [INFO] Executing Step 2: PromptGeneration
+2024-08-01 15:15:34 [INFO] Querying without using training data.
+2024-08-01 15:15:34 [INFO] Querying without using training docs.
+2024-08-01 15:15:34 [INFO] Using prompt: <dataframe>
+dfs[0]:10x4
+country,sales,deals_opened,deals_closed
+Australia,7000,50,80
+France,2100,90,60
+Canada,2600,110,120
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+
+
+
+
+### QUERY
+ No need to rely on the given dataframe, just plot me the current top gainers chart using pie chart
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2024-08-01 15:15:34 [INFO] Executing Step 3: CodeGenerator
+2024-08-01 15:15:37 [INFO] Prompt used:
+            None
+            
+2024-08-01 15:15:37 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Generate data for the chart (Assuming these are the top gainers)
+countries = ['Australia', 'France', 'Canada']
+sales = [7000, 2100, 2600]
+
+# Plotting the pie chart
+plt.figure(figsize=(8, 6))
+plt.pie(sales, labels=countries, autopct='%1.1f%%', startangle=140)
+plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+plt.title('Top Gainers Chart')
+
+# Save the plot as png
+plt.savefig('top_gainers_chart.png')
+
+# Declare result variable as a dictionary
+result = {"type": "plot", "value": "top_gainers_chart.png"}
+            ```
+            
+2024-08-01 15:15:37 [INFO] Executing Step 4: CachePopulation
+2024-08-01 15:15:37 [INFO] Executing Step 5: CodeCleaning
+2024-08-01 15:15:37 [INFO] Saving charts to C:\Users\New\Desktop\FE\backend\src\exports\charts\temp_chart.png
+2024-08-01 15:15:37 [INFO] 
+Code running:
+```
+countries = ['Australia', 'France', 'Canada']
+sales = [7000, 2100, 2600]
+plt.figure(figsize=(8, 6))
+plt.pie(sales, labels=countries, autopct='%1.1f%%', startangle=140)
+plt.axis('equal')
+plt.title('Top Gainers Chart')
+plt.savefig('C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png')
+result = {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png'}
+        ```
+2024-08-01 15:15:37 [INFO] Executing Step 6: CodeExecution
+2024-08-01 15:15:37 [INFO] Executing Step 7: ResultValidation
+2024-08-01 15:15:37 [INFO] Answer: {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png'}
+2024-08-01 15:15:37 [INFO] Executing Step 8: ResultParsing
+2024-08-01 15:18:21 [INFO] Question: plot me the sell and buy ratio in the given data using pie chart
+2024-08-01 15:18:21 [INFO] Running PandasAI with bamboo_llm LLM...
+2024-08-01 15:18:21 [INFO] Prompt ID: 78bbcaf6-0b80-43f6-ae22-70013bae54dc
+2024-08-01 15:18:21 [INFO] Executing Pipeline: GenerateChatPipeline
+2024-08-01 15:18:21 [INFO] Executing Step 0: ValidatePipelineInput
+2024-08-01 15:18:21 [INFO] Executing Step 1: CacheLookup
+2024-08-01 15:18:21 [INFO] Executing Step 2: PromptGeneration
+2024-08-01 15:18:22 [INFO] Querying without using training data.
+2024-08-01 15:18:23 [INFO] Querying without using training docs.
+2024-08-01 15:18:23 [INFO] Using prompt: <dataframe>
+dfs[0]:16x6
+id,name,current_price,quantity,action,time
+66aa21c5bede233818d3e836,MSFT,191.75,4,SELL,31/07/2024 22:10:26
+66a8ccffd1f3d0fbe7126b1f,TSLA,219.0,7,SELL,31/07/2024 13:35:11
+66aa21a2bede233818d3e835,IBM,403.21,8,BUY,31/07/2024 14:08:53
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+
+
+
+
+### QUERY
+ plot me the sell and buy ratio in the given data using pie chart
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2024-08-01 15:18:23 [INFO] Executing Step 3: CodeGenerator
+2024-08-01 15:18:28 [INFO] Prompt used:
+            None
+            
+2024-08-01 15:18:28 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Write code here
+data = {'id': ['66aa21c5bede233818d3e836', '66a8ccffd1f3d0fbe7126b1f', '66aa21a2bede233818d3e835'],
+        'name': ['MSFT', 'TSLA', 'IBM'],
+        'current_price': [191.75, 219.0, 403.21],
+        'quantity': [4, 7, 8],
+        'action': ['SELL', 'SELL', 'BUY'],
+        'time': ['31/07/2024 22:10:26', '31/07/2024 13:35:11', '31/07/2024 14:08:53']}
+
+df = pd.DataFrame(data)
+
+# Calculate the sell and buy ratio
+sell_count = len(df[df['action'] == 'SELL'])
+buy_count = len(df[df['action'] == 'BUY'])
+
+# Create a pie chart
+labels = ['SELL', 'BUY']
+sizes = [sell_count, buy_count]
+fig1, ax1 = plt.subplots()
+ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+plt.title('Sell vs Buy Ratio')
+plt.show()
+
+# Declare result var
+result = {"type": "plot", "value": "sell_buy_ratio_pie_chart.png"}
+            ```
+            
+2024-08-01 15:18:28 [INFO] Executing Step 4: CachePopulation
+2024-08-01 15:18:28 [INFO] Executing Step 5: CodeCleaning
+2024-08-01 15:18:28 [INFO] Saving charts to C:\Users\New\Desktop\FE\backend\src\exports\charts\temp_chart.png
+2024-08-01 15:18:28 [INFO] 
+Code running:
+```
+data = {'id': ['66aa21c5bede233818d3e836', '66a8ccffd1f3d0fbe7126b1f', '66aa21a2bede233818d3e835'], 'name': ['MSFT', 'TSLA', 'IBM'], 'current_price': [191.75, 219.0, 403.21], 'quantity': [4, 7, 8], 'action': ['SELL', 'SELL', 'BUY'], 'time': ['31/07/2024 22:10:26', '31/07/2024 13:35:11', '31/07/2024 14:08:53']}
+df = dfs[0]
+sell_count = len(df[df['action'] == 'SELL'])
+buy_count = len(df[df['action'] == 'BUY'])
+labels = ['SELL', 'BUY']
+sizes = [sell_count, buy_count]
+fig1, ax1 = plt.subplots()
+ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+ax1.axis('equal')
+plt.title('Sell vs Buy Ratio')
+plt.show()
+result = {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png'}
+        ```
+2024-08-01 15:18:28 [INFO] Executing Step 6: CodeExecution
+2024-08-01 15:18:37 [INFO] Executing Step 7: ResultValidation
+2024-08-01 15:18:37 [INFO] Answer: {'type': 'plot', 'value': 'C:/Users/New/Desktop/FE/backend/src/exports/charts/temp_chart.png'}
+2024-08-01 15:18:37 [INFO] Executing Step 8: ResultParsing

@@ -63,6 +63,7 @@ echios_symbols = ["ibm", "msft", "tsla", "race"]
 echiosapiKey= 'GRP18XR0CK3T7'
 echios_url = "https://echios.tech/price/" 
 previous_echios_mock = None
+EMAIL = ""
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -184,6 +185,8 @@ async def verify(request: Request):
     otp = body["otp"]
     hashed_otp = sha256(otp.encode()).hexdigest()
     if hashed_otp == USER_OTP.get(email, ""):
+        global EMAIL
+        EMAIL = email
         return True 
     return False
 
@@ -192,9 +195,11 @@ async def verify(request: Request):
 async def query(request: Request):
     data = await request.json()
     context = data["query"].lower()
-    # email = data["email"]
     clean_text = clean_context(context)
     tokens = clean_text.split()
+    if "chart" in tokens or "plot" in tokens or "graph" in tokens:
+        requests.post(f"http://localhost:5001/plotdata?query={clean_text}")
+        return 
     for token in tokens:
         if INTENTS.get(token):
             if INTENTS[token] == "fetch":
@@ -233,6 +238,7 @@ async def query(request: Request):
     for line in lines:
         chunks = line.split('**')
         res += ''.join(chunks)
+        res += ' '
     print(res)
     return res
 
