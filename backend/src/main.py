@@ -226,11 +226,15 @@ async def query(request: Request):
             #         company_name = tokens[placeholder+1]
             #         data = requests.post("http://localhost:5000/transaction", {"email": email, })
 
-    new_query = data["query"] #+ ". Make sure the generated text is strictly in dictionary format such that I can convert the generated data from response.text to dictionary easily in python using json.loads function to convert the text to dict and strictly without new lines and without endlines"
+    new_query = data["query"] + ". The generated text should be exactly in this format without any newlines and text editor symbols. The text format should be : '1.) Strategy: A trading strategy in detail, 2.) Timeframe: 3.) Indicators: 4.)Real time stock price: AAPL: 100$, 5.) Entry Rules:, etc'"
     response = model.generate_content(new_query)
-    print(response.text)
-    data = response.text
-    return data
+    lines = response.text.split('\n')
+    res = ""
+    for line in lines:
+        chunks = line.split('**')
+        res += ''.join(chunks)
+    print(res)
+    return res
 
 @app.post("/transaction")
 async def transact(request: Request):
